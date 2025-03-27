@@ -34,7 +34,7 @@ class MSSQLDB
                 \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
                 \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_OBJ,
                 \PDO::SQLSRV_ATTR_DIRECT_QUERY => true,
-                \PDO::SQLSRV_ATTR_DIRECT_QUERY => true
+                \PDO::SQLSRV_ATTR_CLIENT_BUFFER_MAX_KB_SIZE => 10240
             ]);
             //$this->dbh->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             //$this->dbh->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_OBJ);
