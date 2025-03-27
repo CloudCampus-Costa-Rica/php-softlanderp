@@ -10,7 +10,14 @@ class NotaCreditoHandler extends SoftlandHandler
         parent::__construct($config);
     }
 
-    public function insertarDiario($documento, $cliente, $impuesto, $asiento)
+    /**
+     * @param DocumentoCC $documento
+     * @param Cliente $cliente
+     * @param array $impuestos
+     * @param string $asiento
+     * @return void
+     */
+    public function insertarDiario($documento, $cliente, $impuestos, $asiento)
     {
         $ln = ["p", "d"];
         $lineas = [];
@@ -55,7 +62,10 @@ class NotaCreditoHandler extends SoftlandHandler
                 $linea->centroCosto = $documento->centroCosto;
                 $linea->cuentaContable = $documento->cuentaContable;
             }
-            if ($ln[$i] == "i" && $impuesto != null) {
+            if ($ln[$i] == "i" && $impuestos && count($impuestos) > 0) {
+
+                $impuesto = $impuestos[0];
+
                 $linea->centroCosto = $impuesto->centroCosto;
                 $linea->cuentaContable = $impuesto->cuentaContable;
             }

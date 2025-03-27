@@ -255,11 +255,11 @@ abstract class SoftlandHandler
     /**
      * @param DocumentoCC $documento
      * @param Cliente $cliente
-     * @param Impuesto|null $impuesto
+     * @param array $impuestos
      * @param string $asiento
      * @return void
      */
-    public abstract function insertarDiario($documento, $cliente, $impuesto, $asiento);
+    public abstract function insertarDiario($documento, $cliente, $impuestos, $asiento);
     //{
     //    echo "insertarDiario\n";
     //    $ln = ["p", "d"];

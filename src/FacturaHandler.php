@@ -20,10 +20,10 @@ class FacturaHandler extends SoftlandHandler
     /**
      * @param DocumentoCC $documento
      * @param Cliente $cliente
-     * @param Impuesto|null $impuesto
+     * @param array $impuestos
      * @param string $asiento
      */
-    public function insertarDiario($documento, $cliente, $impuesto, $asiento)
+    public function insertarDiario($documento, $cliente, $impuestos, $asiento)
     {
         $ln = ["p", "d"];
         $lineas = [];
@@ -68,7 +68,9 @@ class FacturaHandler extends SoftlandHandler
                 $linea->centroCosto = $documento->centroCosto;
                 $linea->cuentaContable = $documento->cuentaContable;
             }
-            if ($ln[$i] == "i" && $impuesto != null) {
+            if ($ln[$i] == "i" && $impuestos && count($impuestos) > 0) {
+                // buscar impuesto
+                $impuesto = $impuestos[0];
                 $linea->centroCosto = $impuesto->centroCosto;
                 $linea->cuentaContable = $impuesto->cuentaContable;
             }
