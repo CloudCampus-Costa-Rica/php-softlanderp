@@ -24,7 +24,7 @@ class ClienteHandler
     public function __construct($config)
     {
         $this->config = $config;
-        $this->db = DB::getInstance($config);
+        $this->db = MSSQLDB::getInstance($config);
     }
 
 

@@ -15,7 +15,7 @@ class Client
      */
     public function __construct($config)
     {
-        $this->db = DB::getInstance($config);
+        $this->db = MSSQLDB::getInstance($config);
     }
 
 
