@@ -9,6 +9,7 @@ use SoftlandERP\ClienteHandler;
 use SoftlandERP\FacturaHandler;
 use SoftlandERP\ReciboHandler;
 use SoftlandERP\AuxiliarCCHandler;
+use SoftlandERP\NotaCreditoHandler;
 use SoftlandERP\Models\Cliente;
 use SoftlandERP\Models\DocumentoCC;
 use SoftlandERP\Models\Impuesto;
@@ -45,6 +46,8 @@ $codigoCliente = $handler->insertar($cliente);
 
 $cliente->codigo = $codigoCliente;
 
+echo "codigo cliente: " . $codigoCliente . "\n";
+
 
 // insertar factura
 //$tipo = Utils::decodificarTipoIdentificacion($cliente->nit);
@@ -53,11 +56,15 @@ $cliente->codigo = $codigoCliente;
 // registrar factura
 $facturas = new FacturaHandler($config);
 $recibos = new ReciboHandler($config);
+$notasCredito = new NotaCreditoHandler($config);
 //$facturas->insertarCC("FAC-0002", $codigoCliente, 10000, 10000, 1);
 //$facturas->insertarCC("FAC", "FAC-0004", $codigoCliente, 10000, 10000, 1);
 
+$numFactura = "FAC-000104";
+$numNotaCredito = "NC-000102";
+
 $factura = new DocumentoCC();
-$factura->documento = "FAC-0010";
+$factura->documento = $numFactura;
 $factura->tipoCambioDolar = 500;
 $factura->moneda = "CRC";
 $factura->subtotal = 1000;
@@ -70,18 +77,20 @@ $factura->monto = 1130;
 $factura->tipo = "FAC";
 $factura->subtipo = 0;
 $factura->cliente = $codigoCliente;
+$factura->centroCostoImpuesto = "00-00-00";
+$factura->cuentaContableImpuesto = "1-01-05-001-002";
 
-//$facturas->insertarDocumentoCC($factura);
+$facturas->insertarDocumentoCC($factura);
 
-$impuesto = new Impuesto();
-$impuesto->centroCosto = "00-00-00";
-$impuesto->cuentaContable = "1-01-05-001-002";
+//$impuesto = new Impuesto();
+//$impuesto->centroCosto = "00-00-00";
+//$impuesto->cuentaContable = "1-01-05-001-002";
 $paquete = "CC";
 $tipoAsiento = "CC";
-//$asiento =  $facturas->obtenerConsecutivoPaquete("CC");
-//echo "asiento factura: " . $asiento . "\n";
-//$facturas->insertarAsientoDeDiario($factura, $asiento, $paquete, $tipoAsiento);
-//$facturas->insertarDiario($factura, $cliente, $impuesto, $asiento);
+$asiento =  $facturas->obtenerConsecutivoPaquete("CC");
+echo "asiento factura: " . $asiento . "\n";
+$facturas->insertarAsientoDeDiario($factura, $asiento, $paquete, $tipoAsiento);
+$facturas->insertarDiario($factura, $cliente, null, $asiento);
 
 $recibo = new DocumentoCC();
 $recibo->documento = "REC-0002";
@@ -96,15 +105,15 @@ $recibo->centroCosto = "00-00-00";
 $recibo->cuentaContable = "1-06-04-000-000";
 $recibo->monto = 1000;
 $recibo->fecha = "2025-03-24 09:53:00";
-$recibo->aplicacion = "FAC-0010";
+$recibo->aplicacion = "FAC-000101";
 $recibo->referencia = "BNCR-0001";
-$recibo->documentoAplicacion = "FAC-0010";
+$recibo->documentoAplicacion = "FAC-000101";
 $recibo->cliente = $codigoCliente;
 
 //$recibos->insertarDocumentoCC($recibo);
 
 // crear auxiliar de recibo
-$auxiliarHandler = new AuxiliarCCHandler($config);
+/*$auxiliarHandler = new AuxiliarCCHandler($config);
 $auxiliar = new AuxiliarCC();
 $auxiliar->tipoCredito = $recibo->tipo;
 $auxiliar->tipoDebito = $factura->tipo;
@@ -113,13 +122,45 @@ $auxiliar->docDebito = $factura->documento;
 $auxiliar->monto = $recibo->monto;
 $auxiliar->tipoCambioDolar = $recibo->tipoCambioDolar;
 $auxiliar->fecha = $recibo->fecha;
-$auxiliarHandler->insertar($auxiliar);
+$auxiliarHandler->insertar($auxiliar);*/
 
 //$asiento =  $recibos->obtenerConsecutivoPaquete("CC");
 //echo "asiento recibo: " . $asiento . "\n";
 
 //$recibos->insertarAsientoDeDiario($recibo, $asiento, $paquete, $tipoAsiento);
 //$recibos->insertarDiario($recibo, $cliente, null, $asiento);
+
+$notaCredito = new DocumentoCC();
+$notaCredito->documento = $numNotaCredito;
+$notaCredito->tipoCambioDolar = 500;
+$notaCredito->moneda = "CRC";
+$notaCredito->subtotal = 1000;
+$notaCredito->centroCosto = "00-00-00";
+$notaCredito->cuentaContable = "1-06-04-000-000";
+$notaCredito->impuesto = 130;
+$notaCredito->fecha = "2025-03-24 08:00:00";
+$notaCredito->descuento = 0;
+$notaCredito->monto = 1130;
+$notaCredito->tipo = "FAC";
+$notaCredito->subtipo = 0;
+$notaCredito->cliente = $codigoCliente;
+$notaCredito->centroCostoImpuesto = "00-00-00";
+$notaCredito->cuentaContableImpuesto = "1-01-05-001-002";
+$notaCredito->documentoAplicacion = $numFactura;
+$notaCredito->referencia = $numFactura;
+$notaCredito->aplicacion = $numFactura;
+
+$notasCredito->insertarDocumentoCC($notaCredito);
+
+//$impuesto = new Impuesto();
+//$impuesto->centroCosto = "00-00-00";
+//$impuesto->cuentaContable = "1-01-05-001-002";
+$paquete = "CC";
+$tipoAsiento = "CC";
+$asiento =  $notasCredito->obtenerConsecutivoPaquete("CC");
+echo "asiento nota credito: " . $asiento . "\n";
+$notasCredito->insertarAsientoDeDiario($notaCredito, $asiento, $paquete, $tipoAsiento);
+$notasCredito->insertarDiario($notaCredito, $cliente, null, $asiento);
 
 
 

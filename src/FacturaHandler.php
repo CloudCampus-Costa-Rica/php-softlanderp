@@ -68,12 +68,10 @@ class FacturaHandler extends SoftlandHandler
                 $linea->centroCosto = $documento->centroCosto;
                 $linea->cuentaContable = $documento->cuentaContable;
             }
-            if ($ln[$i] == "i" && $impuestos && count($impuestos) > 0) {
+            if ($ln[$i] == "i" && $documento->centroCostoImpuesto && $documento->cuentaContableImpuesto) {
                 // buscar impuesto
-                /** @var Impuesto $impuesto */
-                $impuesto = $impuestos[0];
-                $linea->centroCosto = $impuesto->centroCosto;
-                $linea->cuentaContable = $impuesto->cuentaContable;
+                $linea->centroCosto = $documento->centroCostoImpuesto;
+                $linea->cuentaContable = $documento->cuentaContableImpuesto;
             }
 
             $linea->fuente = $documento->documento;

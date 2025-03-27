@@ -81,4 +81,13 @@ class DocumentoCC
      * @var string|null
      */
     public $nit;
+
+    /**
+     * @var string|null
+     */
+    public $centroCostoImpuesto;
+    /**
+     * @var string|null
+     */
+    public $cuentaContableImpuesto;
 }

@@ -1,6 +1,10 @@
 <?php
 
 namespace SoftlandERP;
+use SoftlandERP\Models\DocumentoCC;
+use SoftlandERP\Models\Cliente;
+use SoftlandERP\Models\Diario;
+use SoftlandERP\Models\Impuesto;
 
 class NotaCreditoHandler extends SoftlandHandler
 {
@@ -62,13 +66,10 @@ class NotaCreditoHandler extends SoftlandHandler
                 $linea->centroCosto = $documento->centroCosto;
                 $linea->cuentaContable = $documento->cuentaContable;
             }
-            if ($ln[$i] == "i" && $impuestos && count($impuestos) > 0) {
+            if ($ln[$i] == "i" && $documento->centroCostoImpuesto && $documento->cuentaContableImpuesto) {
 
-                /** @var Impuesto $impuesto */
-                $impuesto = $impuestos[0];
-
-                $linea->centroCosto = $impuesto->centroCosto;
-                $linea->cuentaContable = $impuesto->cuentaContable;
+                $linea->centroCosto = $documento->centroCostoImpuesto;
+                $linea->cuentaContable = $documento->cuentaContableImpuesto;
             }
 
             $linea->fuente = $documento->documento;
