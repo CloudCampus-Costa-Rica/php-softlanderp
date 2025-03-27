@@ -67,6 +67,7 @@ class SoftlandConnector
             throw new \Exception("Cliente no encontrado");
         }
 
+        $factura->cliente = $cliente->codigo;
         $facturaHandler->insertarDocumentoCC($factura);
 
         // crear asiento de notaCredito
