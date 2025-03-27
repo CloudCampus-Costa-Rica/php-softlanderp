@@ -286,18 +286,24 @@ class ClienteHandler
         $cliente = null;
         $record =
             $this->db->table(Utils::tableSchema($this->config->get("DB_SCHEMA"), "CLIENTE"))
-            ->select('CLIENTE.CLIENTE, CLIENTE.CONTRIBUYENTE, CATEGORIA_CLIENTE.CTR_CXC, CATEGORIA_CLIENTE.CTA_CXC')
-            ->join(Utils::tableSchema($this->config->get("DB_SCHEMA"), "CATEGORIA_CLIENTE"), 'CLIENTE.CATEGORIA_CLIENTE = CATEGORIA_CLIENTE.CATEGORIA_CLIENTE')
-            ->where("CLIENTE.CLIENTE", $codigoCliente)
+            ->select('CLIENTE, CONTRIBUYENTE, CATEGORIA_CLIENTE')
+            ->where("CLIENTE", $codigoCliente)
             ->get()
             ->first();
 
         if($record) {
+            $categoria =
+                $this->db->table(Utils::tableSchema($this->config->get("DB_SCHEMA"), "CATEGORIA_CLIENTE"))
+                ->select('CTR_CXC, CTA_CXC')
+                ->where("CATEGORIA_CLIENTE", $record->{"CATEGORIA_CLIENTE"})
+                ->get()
+                ->first();
+
             $cliente = new Cliente();
             $cliente->codigo = $record->{"CLIENTE"};
             $cliente->nit = $record->{"CONTRIBUYENTE"};
-            $cliente->cuentaContable = $record->{"CTA_CXC"};
-            $cliente->centroCosto = $record->{"CTR_CXC"};
+            $cliente->cuentaContable = $categoria->{"CTA_CXC"};
+            $cliente->centroCosto = $categoria->{"CTR_CXC"};
         }
         return $cliente;
     }
@@ -314,18 +320,26 @@ class ClienteHandler
         $cliente = null;
         $record =
             $this->db->table(Utils::tableSchema($this->config->get("DB_SCHEMA"), "CLIENTE"))
-            ->select('CLIENTE.CLIENTE, CLIENTE.CONTRIBUYENTE, CATEGORIA_CLIENTE.CTR_CXC, CATEGORIA_CLIENTE.CTA_CXC')
-            ->join(Utils::tableSchema($this->config->get("DB_SCHEMA"), "CATEGORIA_CLIENTE"), 'CLIENTE.CATEGORIA_CLIENTE = CATEGORIA_CLIENTE.CATEGORIA_CLIENTE')
-            ->where("CLIENTE.CONTRIBUYENTE", $nit)
+            ->select('CLIENTE, CONTRIBUYENTE, CATEGORIA_CLIENTE')
+            ->where("CONTRIBUYENTE", $nit)
             ->get()
             ->first();
 
+            //CATEGORIA_CLIENTE.CTR_CXC, CATEGORIA_CLIENTE.CTA_CXC
         if($record) {
+
+            $categoria =
+                $this->db->table(Utils::tableSchema($this->config->get("DB_SCHEMA"), "CATEGORIA_CLIENTE"))
+                ->select('CTR_CXC, CTA_CXC')
+                ->where("CATEGORIA_CLIENTE", $record->{"CATEGORIA_CLIENTE"})
+                ->get()
+                ->first();
+
             $cliente = new Cliente();
             $cliente->codigo = $record->{"CLIENTE"};
             $cliente->nit = $record->{"CONTRIBUYENTE"};
-            $cliente->cuentaContable = $record->{"CTA_CXC"};
-            $cliente->centroCosto = $record->{"CTR_CXC"};
+            $cliente->cuentaContable = $categoria->{"CTA_CXC"};
+            $cliente->centroCosto = $categoria->{"CTR_CXC"};
         }
         return $cliente;
     }
