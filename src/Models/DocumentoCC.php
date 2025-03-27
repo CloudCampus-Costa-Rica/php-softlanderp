@@ -56,7 +56,7 @@ class DocumentoCC
      */
     public $aplicacion;
     /**
-     * @var string
+     * @var string|null
      */
     public $cliente;    
     /**
@@ -71,4 +71,14 @@ class DocumentoCC
      * @var string
      */
     public $cuentaContable;
+
+    /**
+     * @var string
+     */
+    public $documentoAplicacion;
+
+    /**
+     * @var string|null
+     */
+    public $nit;
 }

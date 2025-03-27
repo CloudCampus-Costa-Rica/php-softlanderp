@@ -2,31 +2,6 @@
 
 namespace SoftlandERP\Models;
 
-
-/**
- * 
- 
-        public string ASIENTO { get; set; }        
-        [Column(Order = 1)]
-        public int CONSECUTIVO { get; set; }
-        public string NIT { get; set; }
-        public string CENTRO_COSTO { get; set; }
-        public string CUENTA_CONTABLE { get; set; }
-        public decimal? DEBITO_LOCAL { get; set; }
-        public decimal? CREDITO_LOCAL { get; set; }
-        public decimal? BASE_LOCAL { get; set; }
-        public decimal? DEBITO_DOLAR { get; set; }
-        public decimal? CREDITO_DOLAR { get; set; }        
-        public decimal? BASE_DOLAR { get; set; }
-        public string TIPO_CAMBIO { get; set; }
-        public string REFERENCIA { get; set; }
-        public string FUENTE { get; set; } // "FA"
-        public string PROYECTO { get; set; }
-        public string FASE { get; set; }
-        public decimal? CREDITO_UNIDADES { get; set; }
-        public decimal? DEBITO_UNIDADES { get; set; }
- */
-
 class Diario
 {
 

@@ -6,15 +6,16 @@ use SoftlandERP\Models\DocumentoCC;
 use SoftlandERP\Models\Impuesto;
 use SoftlandERP\Models\Diario;
 
-class FacturaHandler extends SoftlandHandler
-{
 
+class ReciboHandler extends SoftlandHandler
+{
     /**
      * @param Config $config
      */
     public function __construct($config)
     {
-        parent::__construct($config);
+        $this->config = $config;
+        $this->db = DB::getInstance($config);
     }
 
     /**
@@ -25,11 +26,8 @@ class FacturaHandler extends SoftlandHandler
      */
     public function insertarDiario($documento, $cliente, $impuesto, $asiento)
     {
-        $ln = ["p", "d"];
+        $ln = ["p"];
         $lineas = [];
-        if ($documento->impuesto > 0) {
-            $ln[] = "i";
-        }
         $global = 1;
         // insertar primera linea debito
         $linea = new Diario();
@@ -42,14 +40,14 @@ class FacturaHandler extends SoftlandHandler
         $linea->referencia = $documento->documento;
 
         if ($documento->moneda == "CRC") {
-            $linea->debitoLocal = $documento->monto;
-            $linea->debitoDolar = round($documento->monto / $documento->tipoCambioDolar, 2);
+            $linea->creditoLocal = $documento->monto;
+            $linea->creditoDolar = round($documento->monto / $documento->tipoCambioDolar, 2);
         } else {
-            $linea->debitoLocal = round($documento->monto * $documento->tipoCambioDolar, 2);
-            $linea->debitoDolar = $documento->monto;
+            $linea->creditoLocal = round($documento->monto * $documento->tipoCambioDolar, 2);
+            $linea->creditoDolar = $documento->monto;
         }
-        $linea->creditoLocal = null;
-        $linea->creditoDolar = null;
+        $linea->debitoLocal = null;
+        $linea->debitoDolar = null;
         $linea->baseLocal = null;
         $linea->baseDolar = null;
         $linea->debitoUnidades = null;
@@ -57,89 +55,39 @@ class FacturaHandler extends SoftlandHandler
         $linea->tipoCambio = $documento->tipoCambioDolar;
         $lineas[] = $linea;
 
-
         for ($i = 0; $i < count($ln); $i++) {
             $linea = new Diario();
             $linea->asiento = $asiento;
-            $linea->consecutivo = $global;
+            $linea->consecutivo = $global++;
             $linea->nit = $cliente->nit;
             // se obtiene del subtipo
             if ($ln[$i] == "p") {
                 $linea->centroCosto = $documento->centroCosto;
                 $linea->cuentaContable = $documento->cuentaContable;
             }
-            if ($ln[$i] == "i" && $impuesto != null) {
-                $linea->centroCosto = $impuesto->centroCosto;
-                $linea->cuentaContable = $impuesto->cuentaContable;
-            }
 
             $linea->fuente = $documento->documento;
             $linea->referencia = $documento->documento;
 
-            if ($ln[$i] == "p") // credito producto
+            if ($ln[$i] == "p") // debito pago
             {
                 if ($documento->moneda == "CRC") {
-                    $linea->creditoLocal = $documento->subtotal;
-                    $linea->creditoDolar = round($documento->subtotal / $documento->tipoCambioDolar, 2);
+                    $linea->debitoLocal = $documento->subtotal;
+                    $linea->debitoDolar = round($documento->subtotal / $documento->tipoCambioDolar, 2);
                 } else {
-                    $linea->creditoLocal = round($documento->subtotal * $documento->tipoCambioDolar, 2);
-                    $linea->creditoDolar = $documento->subtotal;
+                    $linea->debitoLocal = round($documento->subtotal * $documento->tipoCambioDolar, 2);
+                    $linea->debitoDolar = $documento->subtotal;
                 }
-                $linea->debitoLocal = null;
-                $linea->debitoDolar = null;
-                $linea->baseLocal = null;
-                $linea->baseDolar = null;
-            }
-
-            if ($ln[$i] == "d") // debito descuento
-            {
-                if ($documento->descuento == 0) {
-                    continue;
-                }
-
-                if ($documento->moneda == "CRC") {
-                    $linea->debitoLocal = $documento->descuento;
-                    $linea->debitoDolar = round($documento->descuento / $documento->tipoCambioDolar, 2);
-                } else {
-                    $linea->debitoLocal = round($documento->descuento * $documento->tipoCambioDolar, 2);
-                    $linea->debitoDolar = $documento->descuento;
-                }
-
                 $linea->creditoLocal = null;
                 $linea->creditoDolar = null;
                 $linea->baseLocal = null;
                 $linea->baseDolar = null;
             }
 
-            if ($ln[$i] == "i") // CREDITO IVA
-            {
-
-                if ($documento->impuesto == 0) {
-                    continue;
-                }
-
-                $linea->debitoLocal = null;
-                $linea->debitoDolar = null;
-
-                if ($documento->moneda == "CRC") {
-                    $linea->creditoLocal = $documento->impuesto;
-                    $linea->creditoDolar = round($documento->impuesto / $documento->tipoCambioDolar, 2);
-
-                    $linea->baseLocal = $documento->subtotal;
-                    $linea->baseDolar = round($documento->subtotal / $documento->tipoCambioDolar, 2);
-                } else {
-                    $linea->creditoLocal = round($documento->impuesto * $documento->tipoCambioDolar, 2);
-                    $linea->creditoDolar = $documento->impuesto;
-
-                    $linea->baseLocal = round($documento->subtotal * $documento->tipoCambioDolar, 2);
-                    $linea->baseDolar = $documento->subtotal;
-                }
-            }
             $linea->debitoUnidades = null;
             $linea->creditoUnidades = null;
             $linea->tipoCambio = $documento->tipoCambioDolar;
             $lineas[] = $linea;
-            $global++;
         }
 
         $esquema = $this->config->get('DB_SCHEMA');

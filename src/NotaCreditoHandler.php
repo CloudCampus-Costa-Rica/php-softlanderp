@@ -2,27 +2,14 @@
 
 namespace SoftlandERP;
 
-use SoftlandERP\Models\DocumentoCC;
-use SoftlandERP\Models\Impuesto;
-use SoftlandERP\Models\Diario;
-
-class FacturaHandler extends SoftlandHandler
+class NotaCreditoHandler extends SoftlandHandler
 {
 
-    /**
-     * @param Config $config
-     */
     public function __construct($config)
     {
         parent::__construct($config);
     }
 
-    /**
-     * @param DocumentoCC $documento
-     * @param Cliente $cliente
-     * @param Impuesto|null $impuesto
-     * @param string $asiento
-     */
     public function insertarDiario($documento, $cliente, $impuesto, $asiento)
     {
         $ln = ["p", "d"];
@@ -42,14 +29,14 @@ class FacturaHandler extends SoftlandHandler
         $linea->referencia = $documento->documento;
 
         if ($documento->moneda == "CRC") {
-            $linea->debitoLocal = $documento->monto;
-            $linea->debitoDolar = round($documento->monto / $documento->tipoCambioDolar, 2);
+            $linea->creditoLocal = $documento->monto;
+            $linea->creditoDolar = round($documento->monto / $documento->tipoCambioDolar, 2);
         } else {
-            $linea->debitoLocal = round($documento->monto * $documento->tipoCambioDolar, 2);
-            $linea->debitoDolar = $documento->monto;
+            $linea->creditoLocal = round($documento->monto * $documento->tipoCambioDolar, 2);
+            $linea->creditoDolar = $documento->monto;
         }
-        $linea->creditoLocal = null;
-        $linea->creditoDolar = null;
+        $linea->debitoLocal = null;
+        $linea->debitoDolar = null;
         $linea->baseLocal = null;
         $linea->baseDolar = null;
         $linea->debitoUnidades = null;
@@ -79,14 +66,14 @@ class FacturaHandler extends SoftlandHandler
             if ($ln[$i] == "p") // credito producto
             {
                 if ($documento->moneda == "CRC") {
-                    $linea->creditoLocal = $documento->subtotal;
-                    $linea->creditoDolar = round($documento->subtotal / $documento->tipoCambioDolar, 2);
+                    $linea->debitoLocal = $documento->subtotal;
+                    $linea->debitoDolar = round($documento->subtotal / $documento->tipoCambioDolar, 2);
                 } else {
-                    $linea->creditoLocal = round($documento->subtotal * $documento->tipoCambioDolar, 2);
-                    $linea->creditoDolar = $documento->subtotal;
+                    $linea->debitoLocal = round($documento->subtotal * $documento->tipoCambioDolar, 2);
+                    $linea->debitoDolar = $documento->subtotal;
                 }
-                $linea->debitoLocal = null;
-                $linea->debitoDolar = null;
+                $linea->creditoLocal = null;
+                $linea->creditoDolar = null;
                 $linea->baseLocal = null;
                 $linea->baseDolar = null;
             }
@@ -98,15 +85,15 @@ class FacturaHandler extends SoftlandHandler
                 }
 
                 if ($documento->moneda == "CRC") {
-                    $linea->debitoLocal = $documento->descuento;
-                    $linea->debitoDolar = round($documento->descuento / $documento->tipoCambioDolar, 2);
+                    $linea->creditoLocal = $documento->descuento;
+                    $linea->creditoDolar = round($documento->descuento / $documento->tipoCambioDolar, 2);
                 } else {
-                    $linea->debitoLocal = round($documento->descuento * $documento->tipoCambioDolar, 2);
-                    $linea->debitoDolar = $documento->descuento;
+                    $linea->creditoLocal = round($documento->descuento * $documento->tipoCambioDolar, 2);
+                    $linea->creditoDolar = $documento->descuento;
                 }
 
-                $linea->creditoLocal = null;
-                $linea->creditoDolar = null;
+                $linea->debitoLocal = null;
+                $linea->debitoDolar = null;
                 $linea->baseLocal = null;
                 $linea->baseDolar = null;
             }
@@ -118,18 +105,18 @@ class FacturaHandler extends SoftlandHandler
                     continue;
                 }
 
-                $linea->debitoLocal = null;
-                $linea->debitoDolar = null;
+                $linea->creditoLocal = null;
+                $linea->creditoDolar = null;
 
                 if ($documento->moneda == "CRC") {
-                    $linea->creditoLocal = $documento->impuesto;
-                    $linea->creditoDolar = round($documento->impuesto / $documento->tipoCambioDolar, 2);
+                    $linea->debitoLocal = $documento->impuesto;
+                    $linea->debitoDolar = round($documento->impuesto / $documento->tipoCambioDolar, 2);
 
                     $linea->baseLocal = $documento->subtotal;
                     $linea->baseDolar = round($documento->subtotal / $documento->tipoCambioDolar, 2);
                 } else {
-                    $linea->creditoLocal = round($documento->impuesto * $documento->tipoCambioDolar, 2);
-                    $linea->creditoDolar = $documento->impuesto;
+                    $linea->debitoLocal = round($documento->impuesto * $documento->tipoCambioDolar, 2);
+                    $linea->debitoDolar = $documento->impuesto;
 
                     $linea->baseLocal = round($documento->subtotal * $documento->tipoCambioDolar, 2);
                     $linea->baseDolar = $documento->subtotal;
@@ -173,7 +160,7 @@ class FacturaHandler extends SoftlandHandler
                 $stmt->bindParam(':BASE_DOLAR', $linea->baseDolar);
                 $stmt->execute();
             }
-            $pdo->commit();            
+            $pdo->commit();
         } catch (\PDOException $e) {
             $pdo->rollBack();
             die("Error executing stored procedure: " . $e->getMessage());

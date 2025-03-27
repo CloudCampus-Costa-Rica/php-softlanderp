@@ -30,6 +30,7 @@ class ClienteHandler
 
     /**
      * @param Cliente $cliente
+     * @return string codigo de cliente
      */
     public function insertar($cliente)
     {
@@ -38,8 +39,11 @@ class ClienteHandler
         if (!$this->existeNit($nitConMascara)) {
             $this->registrarNit($cliente, $tipo, $nitConMascara);            
         }
-        if(!$this->consultarCodigoClienteNit($nitConMascara)) {
-            $this->insertarCliente($cliente, $nitConMascara);
+        $existente = $this->consultarCodigoClienteNit($nitConMascara);
+        if($existente){
+            return $existente;
+        }else{
+            return $this->insertarCliente($cliente, $nitConMascara);
         }
     }
 
@@ -122,13 +126,14 @@ class ClienteHandler
     /**
      * @param Cliente @cliente
      * @param string @nitConMascara
-     * @return void
+     * @return string consecutivo
      */
     private function insertarCliente($cliente, $nitConMascara)
     {
         $consecutivo = $this->obtenerConsecutivo();
         $params = $this->crearParametrosInsert($cliente, $nitConMascara, $consecutivo);
         $this->db->insert(Utils::tableSchema($this->config->get("DB_SCHEMA"), "CLIENTE"),$params);
+        return $consecutivo;
     }
 
     /**
@@ -267,5 +272,61 @@ class ClienteHandler
         } finally {
             print("END obtenerConsecutivo\n");
         }
+    }
+
+    /**
+     * @param string $codigo
+     * @return Cliente|null objeto cliente
+     */
+    public function consultarCliente($codigoCliente)
+    {
+        /**
+         * @var Cliente $cliente
+         */
+        $cliente = null;
+        $record =
+            $this->db->table(Utils::tableSchema($this->config->get("DB_SCHEMA"), "CLIENTE"))
+            ->select('CLIENTE.CLIENTE, CLIENTE.CONTRIBUYENTE, CATEGORIA_CLIENTE.CTR_CXC, CATEGORIA_CLIENTE.CTA_CXC')
+            ->join(Utils::tableSchema($this->config->get("DB_SCHEMA"), "CATEGORIA_CLIENTE"), 'CLIENTE.CATEGORIA = CATEGORIA_CLIENTE.CATEGORIA')
+            ->where("CLIENTE.CLIENTE", $codigoCliente)
+            ->get()
+            ->first();
+
+        if($record) {
+            $cliente = new Cliente();
+            $cliente->codigo = $record->{"CLIENTE"};
+            $cliente->nit = $record->{"CONTRIBUYENTE"};
+            $cliente->cuentaContable = $record->{"CTA_CXC"};
+            $cliente->centroCosto = $record->{"CTR_CXC"};
+        }
+        return $cliente;
+    }
+
+    /**
+     * @param string $nit
+     * @return Cliente|null objeto cliente
+     */
+    public function consultarClienteNit($nit)
+    {
+        /**
+         * @var Cliente $cliente
+         */
+        $cliente = null;
+        $record =
+            $this->db->table(Utils::tableSchema($this->config->get("DB_SCHEMA"), "CLIENTE"))
+            ->select('CLIENTE.CLIENTE, CLIENTE.CONTRIBUYENTE, CATEGORIA_CLIENTE.CTR_CXC, CATEGORIA_CLIENTE.CTA_CXC')
+            ->join(Utils::tableSchema($this->config->get("DB_SCHEMA"), "CATEGORIA_CLIENTE"), 'CLIENTE.CATEGORIA = CATEGORIA_CLIENTE.CATEGORIA')
+            ->where("CLIENTE.CONTRIBUYENTE", $nit)
+            ->get()
+            ->first();
+
+        if($record) {
+            $cliente = new Cliente();
+            $cliente->codigo = $record->{"CLIENTE"};
+            $cliente->nit = $record->{"CONTRIBUYENTE"};
+            $cliente->cuentaContable = $record->{"CTA_CXC"};
+            $cliente->centroCosto = $record->{"CTR_CXC"};
+        }
+        return $cliente;
     }
 }

@@ -70,7 +70,10 @@ class AuxiliarCCHandler
         try {
             $stmt->execute();
             // Commit the transaction
+            //$resultado = $stmt->fetch(\PDO::FETCH_ASSOC);
+            //print_r($resultado);
             $pdo->commit();
+
             echo "Stored procedure executed successfully.\n";
         } catch (\PDOException $e) {
             // Rollback the transaction if an error occurs
