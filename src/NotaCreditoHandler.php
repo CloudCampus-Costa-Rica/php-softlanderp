@@ -64,6 +64,7 @@ class NotaCreditoHandler extends SoftlandHandler
             }
             if ($ln[$i] == "i" && $impuestos && count($impuestos) > 0) {
 
+                /** @var Impuesto $impuesto */
                 $impuesto = $impuestos[0];
 
                 $linea->centroCosto = $impuesto->centroCosto;

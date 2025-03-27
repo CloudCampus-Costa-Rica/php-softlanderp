@@ -4,6 +4,8 @@ namespace SoftlandERP;
 
 use SoftlandERP\Models\Cliente;
 use SoftlandERP\Models\DocumentoCC;
+use SoftlandERP\Models\Impuesto;
+use SoftlandERP\Models\AuxiliarCC;
 class SoftlandConnector
 {
 
@@ -56,7 +58,7 @@ class SoftlandConnector
         // crear asiento de notaCredito
         $paquete = "CC";
         $tipoAsiento = "CC";
-        $asiento =  $notaCreditoHandler->obtenerConsecutivoPaquete("CC");
+        $asiento =  $facturaHandler->obtenerConsecutivoPaquete("CC");
         $facturaHandler->insertarAsientoDeDiario($factura, $asiento, $paquete, $tipoAsiento);
         $facturaHandler->insertarDiario($factura, $cliente, $impuestos, $asiento);
         
@@ -76,7 +78,7 @@ class SoftlandConnector
         {
             throw new \Exception("Factura [{$recibo->documentoAplicacion}] no encontrada");
         }
-        
+
         $clienteHandler = new ClienteHandler($this->config);
         $cliente = $clienteHandler->consultarCliente($factura->cliente);
 
@@ -93,7 +95,7 @@ class SoftlandConnector
             $auxiliar->docDebito = $factura->documento;
             $auxiliar->monto = $recibo->monto;
             $auxiliar->tipoCambioDolar = $recibo->tipoCambioDolar;
-            $auxiliarHandler->insertarAuxiliar($auxiliar);
+            $auxiliarHandler->insertar($auxiliar);
         }
 
         // crear asiento de recibo
@@ -118,14 +120,16 @@ class SoftlandConnector
     public function registrar_notaCredito($notaCredito, $impuestos, $aplicar= false)
     {
         $softlandHandler = new SoftlandHandler($this->config);
-        $factura = $softlandHandler->consultarDocumentoCC($recibo->documentoAplicacion);
+        $factura = $softlandHandler->consultarDocumentoCC($notaCredito->documentoAplicacion);
 
         if($factura == null)
         {
             throw new \Exception("Factura [{$notaCredito->documentoAplicacion}] no encontrada");
         }
 
+        $clienteHandler = new ClienteHandler($this->config);
         $cliente = $clienteHandler->consultarCliente($factura->cliente);
+
         $notaCreditoHandler = new NotaCreditoHandler($this->config);
         $notaCreditoHandler->insertarDocumentoCC($notaCredito);
 
@@ -139,7 +143,7 @@ class SoftlandConnector
             $auxiliar->docDebito = $factura->documento;
             $auxiliar->monto = $notaCredito->monto;
             $auxiliar->tipoCambioDolar = $notaCredito->tipoCambioDolar;
-            $auxiliarHandler->insertarAuxiliar($auxiliar);
+            $auxiliarHandler->insertar($auxiliar);
         }
 
         // crear asiento de notaCredito

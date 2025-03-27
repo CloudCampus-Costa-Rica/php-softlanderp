@@ -70,6 +70,7 @@ class FacturaHandler extends SoftlandHandler
             }
             if ($ln[$i] == "i" && $impuestos && count($impuestos) > 0) {
                 // buscar impuesto
+                /** @var Impuesto $impuesto */
                 $impuesto = $impuestos[0];
                 $linea->centroCosto = $impuesto->centroCosto;
                 $linea->cuentaContable = $impuesto->cuentaContable;
