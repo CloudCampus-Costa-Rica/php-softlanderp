@@ -52,7 +52,20 @@ class SoftlandConnector
         $facturaHandler = new FacturaHandler($this->config);
 
         $clienteHandler = new ClienteHandler($this->config);
-        $cliente = $clienteHandler->consultarCliente($factura->cliente);
+        if($factura->cliente == null)
+        {
+            $cliente = $clienteHandler->consultarCliente($factura->cliente);
+        }
+
+        if($cliente == null && $factura->nit != null)
+        {
+            $cliente = $clienteHandler->consultarClienteNit($factura->nit);
+        }
+
+        if($cliente == null)
+        {
+            throw new \Exception("Cliente no encontrado");
+        }
 
         $facturaHandler->insertarDocumentoCC($factura);
 
