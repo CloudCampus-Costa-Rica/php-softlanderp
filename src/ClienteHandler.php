@@ -287,7 +287,7 @@ class ClienteHandler
         $record =
             $this->db->table(Utils::tableSchema($this->config->get("DB_SCHEMA"), "CLIENTE"))
             ->select('CLIENTE.CLIENTE, CLIENTE.CONTRIBUYENTE, CATEGORIA_CLIENTE.CTR_CXC, CATEGORIA_CLIENTE.CTA_CXC')
-            ->join(Utils::tableSchema($this->config->get("DB_SCHEMA"), "CATEGORIA_CLIENTE"), 'CLIENTE.CATEGORIA = CATEGORIA_CLIENTE.CATEGORIA')
+            ->join(Utils::tableSchema($this->config->get("DB_SCHEMA"), "CATEGORIA_CLIENTE"), 'CLIENTE.CATEGORIA_CLIENTE = CATEGORIA_CLIENTE.CATEGORIA_CLIENTE')
             ->where("CLIENTE.CLIENTE", $codigoCliente)
             ->get()
             ->first();
