@@ -30,9 +30,14 @@ class MSSQLDB
             $this->password = $config->get('DB_PASSWORD');
             $this->dbname = $config->get('DB_DATABASE');
 
-            $this->dbh = new \PDO("sqlsrv:Server=$this->host;Database=$this->dbname", $this->username, $this->password);
-            $this->dbh->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-            $this->dbh->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_OBJ);
+            $this->dbh = new \PDO("sqlsrv:Server=$this->host;Database=$this->dbname", $this->username, $this->password, [
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_OBJ,
+                PDO::SQLSRV_ATTR_DIRECT_QUERY => true,
+                PDO::SQLSRV_ATTR_DIRECT_QUERY => true
+            ]);
+            //$this->dbh->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            //$this->dbh->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_OBJ);
         } catch (\Exception $e) {
             die("Error establishing a database connection: " . $e->getMessage() . " - " . $e->getTraceAsString());
         }

@@ -60,8 +60,8 @@ $notasCredito = new NotaCreditoHandler($config);
 //$facturas->insertarCC("FAC-0002", $codigoCliente, 10000, 10000, 1);
 //$facturas->insertarCC("FAC", "FAC-0004", $codigoCliente, 10000, 10000, 1);
 
-$numFactura = "FAC-000105";
-$numNotaCredito = "NC-000103";
+$numFactura = "FAC-000106";
+$numNotaCredito = "NC-000104";
 
 $factura = new DocumentoCC();
 $factura->documento = $numFactura;
