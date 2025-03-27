@@ -76,7 +76,8 @@ class SoftlandConnector
         {
             throw new \Exception("Factura [{$recibo->documentoAplicacion}] no encontrada");
         }
-
+        
+        $clienteHandler = new ClienteHandler($this->config);
         $cliente = $clienteHandler->consultarCliente($factura->cliente);
 
         $reciboHandler = new ReciboHandler($this->config);
