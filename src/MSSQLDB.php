@@ -44,7 +44,7 @@ class MSSQLDB
     public static function getInstance($config)
     {
         if (!self::$instance) {
-            self::$instance = new DB($config);
+            self::$instance = new MSSQLDB($config);
         }
         return self::$instance;
     }
