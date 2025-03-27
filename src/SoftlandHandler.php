@@ -10,7 +10,7 @@ abstract class SoftlandHandler
     protected $config;
 
     /**
-     * @var DB
+     * @var MSSQLDB
      */
     protected $db;
 
@@ -20,7 +20,7 @@ abstract class SoftlandHandler
     public function __construct($config)
     {
         $this->config = $config;
-        $this->db = DB::getInstance($config);
+        $this->db = MSSQLDB::getInstance($config);
     }
 
     /**

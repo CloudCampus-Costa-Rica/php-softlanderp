@@ -10,7 +10,7 @@ class AuxiliarCCHandler
     private $config;
 
     /**
-     * @var DB
+     * @var MSSQLDB
      */
     private $db;
 
@@ -20,7 +20,7 @@ class AuxiliarCCHandler
     public function __construct($config)
     {
         $this->config = $config;
-        $this->db = DB::getInstance($config);
+        $this->db = MSSQLDB::getInstance($config);
     }
 
     /**

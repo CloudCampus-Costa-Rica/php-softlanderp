@@ -16,7 +16,7 @@ class SoftlandConnector
     private $config;
 
     /**
-     * @var \SoflandERP\DB
+     * @var MSSQLDB
      */
     private $db;
 
@@ -26,7 +26,7 @@ class SoftlandConnector
     public function __construct($config)
     {
         $this->config = $config;
-        $this->db = \SoflandERP\DB::getInstance($config);
+        $this->db = MSSQLDB::getInstance($config);
     }
 
     /**

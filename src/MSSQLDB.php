@@ -2,7 +2,7 @@
 
 namespace SoftlandERP;
 
-class DB
+class MSSQLDB
 {
 
     private static $instance = null;

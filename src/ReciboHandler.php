@@ -14,8 +14,7 @@ class ReciboHandler extends SoftlandHandler
      */
     public function __construct($config)
     {
-        $this->config = $config;
-        $this->db = DB::getInstance($config);
+        parent::__construct($config);
     }
 
     /**
