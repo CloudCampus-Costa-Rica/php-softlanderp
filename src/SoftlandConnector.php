@@ -6,6 +6,7 @@ use SoftlandERP\Models\Cliente;
 use SoftlandERP\Models\DocumentoCC;
 use SoftlandERP\Models\Impuesto;
 use SoftlandERP\Models\AuxiliarCC;
+
 class SoftlandConnector
 {
 
@@ -15,7 +16,7 @@ class SoftlandConnector
     private $config;
 
     /**
-     * @var DB
+     * @var \SoflandERP\DB
      */
     private $db;
 
@@ -25,7 +26,7 @@ class SoftlandConnector
     public function __construct($config)
     {
         $this->config = $config;
-        $this->db = DB::getInstance($config);
+        $this->db = \SoflandERP\DB::getInstance($config);
     }
 
     /**

@@ -29,63 +29,332 @@ abstract class SoftlandHandler
      */
     public function insertarDocumentoCC($documento)
     {
-        // Prepare the SQL statement with placeholders for input parameters
-        $sql = "EXEC dbo.SP_Crea_DOC_CC 
-                @DOCUMENTO            = :DOCUMENTO,
-                @TIPO                 = :TIPO,
-                @SUBTIPO              = :SUBTIPO,
-                @MONEDA               = :MONEDA,
-                @FECHA                = :FECHA,
-                @SUBTOTAL             = :SUBTOTAL,
-                @IMPUESTO             = :IMPUESTO,
-                @MONTO                = :MONTO,
-                @SALDO                = :SALDO,
-                @TIPO_CAMBIO_DOLAR    = :TIPO_CAMBIO_DOLAR,
-                @APLICACION           = :APLICACION,
-                @CLIENTE              = :CLIENTE,   
-                @REFERENCIA			 = :REFERENCIA,
-                @ESQUEMA              = :ESQUEMA,
-                @USUARIO				 = :USUARIO";
+        $esquema = $this->config->get('DB_SCHEMA');
+        $usuario = $this->config->get('DB_USERNAME');
+        
+        // Prepare the SQL statement with named parameters
+        $sql = "INSERT INTO [{$esquema}].DOCUMENTOS_CC (
+                    DOCUMENTO,
+                    TIPO,
+                    APLICACION,
+                    FECHA_DOCUMENTO,
+                    FECHA,
+                    MONTO,
+                    SALDO,
+                    MONTO_LOCAL,
+                    SALDO_LOCAL,
+                    MONTO_DOLAR,
+                    SALDO_DOLAR,
+                    MONTO_CLIENTE,
+                    SALDO_CLIENTE,
+                    TIPO_CAMBIO_MONEDA,
+                    TIPO_CAMBIO_DOLAR,
+                    TIPO_CAMBIO_CLIENT,
+                    TIPO_CAMB_ACT_LOC,
+                    TIPO_CAMB_ACT_DOL,
+                    TIPO_CAMB_ACT_CLI,
+                    SUBTOTAL,
+                    DESCUENTO,
+                    IMPUESTO1,
+                    IMPUESTO2,
+                    RUBRO1,
+                    RUBRO2,
+                    MONTO_RETENCION,
+                    SALDO_RETENCION,
+                    BASE_IMPUESTO1,
+                    DEPENDIENTE,
+                    FECHA_ULT_CREDITO,
+                    CARGADO_DE_FACT,
+                    APROBADO,
+                    ASIENTO_PENDIENTE,
+                    FECHA_ULT_MOD,
+                    NOTAS,
+                    CLASE_DOCUMENTO,
+                    FECHA_VENCE,
+                    NUM_PARCIALIDADES,
+                    USUARIO_ULT_MOD,
+                    CONDICION_PAGO,
+                    MONEDA,
+                    CLIENTE_REPORTE,
+                    CLIENTE_ORIGEN,
+                    CLIENTE,
+                    SUBTIPO,
+                    PORC_INTCTE,
+                    NUM_DOC_CB,
+                    USUARIO_APROBACION,
+                    FECHA_APROBACION,
+                    ANULADO,
+                    CODIGO_IMPUESTO,
+                    ACTIVIDAD_COMERCIAL
+                ) VALUES (
+                    :documento,
+                    :tipo,
+                    :aplicacion,
+                    :fecha,
+                    :fecha2,
+                    :monto,
+                    :saldo,
+                    :monto_local,
+                    :saldo_local,
+                    :monto_dolar,
+                    :saldo_dolar,
+                    :monto_cliente,
+                    :saldo_cliente,
+                    :tipo_cambio_moneda,
+                    :tipo_cambio_dolar,
+                    :tipo_cambio_cliente,
+                    :tipo_cambio_act_loc,
+                    :tipo_cambio_act_dol,
+                    :tipo_cambio_act_cli,
+                    :subtotal,
+                    0,
+                    :impuesto1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    :impuesto2,
+                    'N',
+                    '1980-01-01 00:00:00',
+                    'N',
+                    'S',
+                    'N',
+                    CONVERT(VARCHAR, DATEADD(day, DATEDIFF(day, 0, GETDATE()), 0)),
+                    'Documento creado desde el sistema de Pagares para cancelar Facturas Modificadas',
+                    'N',
+                    CONVERT(VARCHAR, DATEADD(day, DATEDIFF(day, 0, GETDATE()), 0)),
+                    0,
+                    (CASE WHEN UPPER(:usuario1) like 'X%' then SUBSTRING(:usuario2, 2, LEN(:usuario3)) else :usuario4 end),
+                    0,
+                    :moneda,
+                    :cliente1,
+                    :cliente2,
+                    :cliente3,
+                    :subtipo,
+                    0,
+                    0,
+                    (CASE WHEN UPPER(:usuario5) like 'X%' then SUBSTRING(:usuario6, 2, LEN(:usuario7)) else :usuario8 end),
+                    CONVERT(VARCHAR, DATEADD(day, DATEDIFF(day, 0, GETDATE()), 0)),
+                    'N',
+                    '1',
+                    '630401'
+                )";
 
         // Prepare the statement
         $pdo = $this->db->getConnection();
-
-        // Set the transaction isolation level
         $pdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
-
-        // Begin a transaction
         $pdo->beginTransaction();
 
-        $stmt = $pdo->prepare($sql);
-
-        // Bind the input parameters to the placeholders
-        $usuario = $this->config->get('DB_USERNAME');
-        $esquema = $this->config->get('DB_DATABASE');
-        $stmt->bindParam(':DOCUMENTO', $documento->documento, \PDO::PARAM_STR);
-        $stmt->bindParam(':TIPO', $documento->tipo, \PDO::PARAM_STR);
-        $stmt->bindParam(':SUBTIPO', $documento->subtipo, \PDO::PARAM_INT);
-        $stmt->bindParam(':MONEDA', $documento->moneda, \PDO::PARAM_STR);
-        $stmt->bindParam(':FECHA', $documento->fecha, \PDO::PARAM_STR);
-        $stmt->bindParam(':SUBTOTAL', $documento->subtotal);
-        $stmt->bindParam(':IMPUESTO', $documento->impuesto);
-        $stmt->bindParam(':MONTO', $documento->monto);
-        $stmt->bindParam(':SALDO', $documento->saldo);
-        $stmt->bindParam(':TIPO_CAMBIO_DOLAR', $documento->tipoCambioDolar);
-        $stmt->bindParam(':APLICACION', $documento->aplicacion, \PDO::PARAM_STR);
-        $stmt->bindParam(':CLIENTE', $documento->cliente, \PDO::PARAM_STR);
-        $stmt->bindParam(':REFERENCIA', $documento->referencia, \PDO::PARAM_STR);
-        $stmt->bindParam(':ESQUEMA', $esquema, \PDO::PARAM_STR);
-        $stmt->bindParam(':USUARIO', $usuario, \PDO::PARAM_STR);
-
-        // Execute the statement
         try {
+            $stmt = $pdo->prepare($sql);
+            
+            // Bind parameters
+            $stmt->bindParam(':documento', $documento->documento, \PDO::PARAM_STR);
+            $stmt->bindParam(':tipo', $documento->tipo, \PDO::PARAM_STR);
+            $stmt->bindParam(':aplicacion', $documento->aplicacion, \PDO::PARAM_STR);
+            $stmt->bindParam(':fecha', $documento->fecha, \PDO::PARAM_STR);
+            $stmt->bindParam(':fecha2', $documento->fecha, \PDO::PARAM_STR);
+            $stmt->bindParam(':monto', $documento->monto);
+            $stmt->bindParam(':saldo', $documento->saldo);
+            $stmt->bindParam(':monto_local', $documento->monto);
+            $stmt->bindParam(':saldo_local', $documento->saldo);
+            $stmt->bindValue(':monto_dolar', $documento->monto * $documento->tipoCambioDolar);
+            $stmt->bindValue(':saldo_dolar', $documento->saldo * $documento->tipoCambioDolar);
+            $stmt->bindParam(':monto_cliente', $documento->monto);
+            $stmt->bindParam(':saldo_cliente', $documento->saldo);
+            $stmt->bindParam(':tipo_cambio_moneda', $documento->tipoCambioDolar);
+            $stmt->bindParam(':tipo_cambio_dolar', $documento->tipoCambioDolar);
+            $stmt->bindParam(':tipo_cambio_cliente', $documento->tipoCambioDolar);
+            $stmt->bindParam(':tipo_cambio_act_loc', $documento->tipoCambioDolar);
+            $stmt->bindParam(':tipo_cambio_act_dol', $documento->tipoCambioDolar);
+            $stmt->bindParam(':tipo_cambio_act_cli', $documento->tipoCambioDolar);
+            $stmt->bindParam(':subtotal', $documento->subtotal);
+            $stmt->bindParam(':impuesto1', $documento->impuesto);
+            $stmt->bindParam(':impuesto2', $documento->impuesto);
+            $stmt->bindParam(':moneda', $documento->moneda, \PDO::PARAM_STR);
+            $stmt->bindParam(':cliente1', $documento->cliente, \PDO::PARAM_STR);
+            $stmt->bindParam(':cliente2', $documento->cliente, \PDO::PARAM_STR);
+            $stmt->bindParam(':cliente3', $documento->cliente, \PDO::PARAM_STR);
+            $stmt->bindParam(':subtipo', $documento->subtipo, \PDO::PARAM_INT);
+            $stmt->bindParam(':usuario1', $usuario, \PDO::PARAM_STR);
+            $stmt->bindParam(':usuario2', $usuario, \PDO::PARAM_STR);
+            $stmt->bindParam(':usuario3', $usuario, \PDO::PARAM_STR);
+            $stmt->bindParam(':usuario4', $usuario, \PDO::PARAM_STR);
+            $stmt->bindParam(':usuario5', $usuario, \PDO::PARAM_STR);
+            $stmt->bindParam(':usuario6', $usuario, \PDO::PARAM_STR);
+            $stmt->bindParam(':usuario7', $usuario, \PDO::PARAM_STR);
+            $stmt->bindParam(':usuario8', $usuario, \PDO::PARAM_STR);
+
             $stmt->execute();
-            // Commit the transaction
             $pdo->commit();
         } catch (\PDOException $e) {
-            // Rollback the transaction if an error occurs
             $pdo->rollBack();
-            die("Error executing stored procedure: " . $e->getMessage());
+            throw new \RuntimeException("Error executing insert statement: " . $e->getMessage());
+        }
+    }
+
+    public function insertarDocumentoCCOld($documento)
+    {
+        $esquema = $this->config->get('DB_DATABASE');
+        $usuario = $this->config->get('DB_USERNAME');
+        
+        $sql = "INSERT INTO [{$esquema}].DOCUMENTOS_CC (
+                    DOCUMENTO,
+                    TIPO,
+                    APLICACION,
+                    FECHA_DOCUMENTO,
+                    FECHA,
+                    MONTO,
+                    SALDO,
+                    MONTO_LOCAL,
+                    SALDO_LOCAL,
+                    MONTO_DOLAR,
+                    SALDO_DOLAR,
+                    MONTO_CLIENTE,
+                    SALDO_CLIENTE,
+                    TIPO_CAMBIO_MONEDA,
+                    TIPO_CAMBIO_DOLAR,
+                    TIPO_CAMBIO_CLIENT,
+                    TIPO_CAMB_ACT_LOC,
+                    TIPO_CAMB_ACT_DOL,
+                    TIPO_CAMB_ACT_CLI,
+                    SUBTOTAL,
+                    DESCUENTO,
+                    IMPUESTO1,
+                    IMPUESTO2,
+                    RUBRO1,
+                    RUBRO2,
+                    MONTO_RETENCION,
+                    SALDO_RETENCION,
+                    BASE_IMPUESTO1,
+                    DEPENDIENTE,
+                    FECHA_ULT_CREDITO,
+                    CARGADO_DE_FACT,
+                    APROBADO,
+                    ASIENTO_PENDIENTE,
+                    FECHA_ULT_MOD,
+                    NOTAS,
+                    CLASE_DOCUMENTO,
+                    FECHA_VENCE,
+                    NUM_PARCIALIDADES,
+                    USUARIO_ULT_MOD,
+                    CONDICION_PAGO,
+                    MONEDA,
+                    CLIENTE_REPORTE,
+                    CLIENTE_ORIGEN,
+                    CLIENTE,
+                    SUBTIPO,
+                    PORC_INTCTE,
+                    NUM_DOC_CB,
+                    USUARIO_APROBACION,
+                    U_REFERENCIA_TOURPLAN,
+                    FECHA_APROBACION,
+                    ANULADO,
+                    CODIGO_IMPUESTO,
+                    ACTIVIDAD_COMERCIAL
+                ) VALUES (
+                    :documento,
+                    :tipo,
+                    :aplicacion,
+                    :fecha,
+                    :fecha2,
+                    :monto,
+                    :saldo,
+                    (:monto * :tipo_cambio_dolar1),
+                    (:saldo * :tipo_cambio_dolar2),
+                    :monto,
+                    :saldo,
+                    :monto,
+                    :saldo,
+                    :tipo_cambio_dolar3,
+                    :tipo_cambio_dolar4,
+                    :tipo_cambio_dolar5,
+                    :tipo_cambio_dolar6,
+                    :tipo_cambio_dolar7,
+                    :tipo_cambio_dolar8,
+                    :subtotal,
+                    0,
+                    :impuesto1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    :impuesto2,
+                    'N',
+                    '1980-01-01 00:00:00',
+                    'N',
+                    'S',
+                    'N',
+                    CONVERT(VARCHAR, DATEADD(day, DATEDIFF(day, 0, GETDATE()), 0),
+                    'Documento creado desde el sistema de Pagares para cancelar Facturas Modificadas',
+                    'N',
+                    CONVERT(VARCHAR, DATEADD(day, DATEDIFF(day, 0, GETDATE()), 0),
+                    0,
+                    (CASE WHEN UPPER(:usuario1) LIKE 'X%' THEN SUBSTRING(:usuario2, 2, LEN(:usuario3)) ELSE :usuario4 END),
+                    0,
+                    :moneda,
+                    :cliente1,
+                    :cliente2,
+                    :cliente3,
+                    :subtipo,
+                    0,
+                    0,
+                    (CASE WHEN UPPER(:usuario5) LIKE 'X%' THEN SUBSTRING(:usuario6, 2, LEN(:usuario7)) ELSE :usuario8 END),
+                    :referencia,
+                    CONVERT(VARCHAR, DATEADD(day, DATEDIFF(day, 0, GETDATE()), 0),
+                    'N',
+                    '1',
+                    '630401'
+                )";
+
+        $pdo = $this->db->getConnection();
+        $pdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
+        $pdo->beginTransaction();
+
+        try {
+            $stmt = $pdo->prepare($sql);
+            
+            // Bind parameters
+            $stmt->bindParam(':documento', $documento->documento);
+            $stmt->bindParam(':tipo', $documento->tipo);
+            $stmt->bindParam(':aplicacion', $documento->aplicacion);
+            $stmt->bindParam(':fecha', $documento->fecha);
+            $stmt->bindParam(':fecha2', $documento->fecha);
+            $stmt->bindParam(':monto', $documento->monto);
+            $stmt->bindParam(':saldo', $documento->saldo);
+            $stmt->bindParam(':tipo_cambio_dolar1', $documento->tipoCambioDolar);
+            $stmt->bindParam(':tipo_cambio_dolar2', $documento->tipoCambioDolar);
+            $stmt->bindParam(':tipo_cambio_dolar3', $documento->tipoCambioDolar);
+            $stmt->bindParam(':tipo_cambio_dolar4', $documento->tipoCambioDolar);
+            $stmt->bindParam(':tipo_cambio_dolar5', $documento->tipoCambioDolar);
+            $stmt->bindParam(':tipo_cambio_dolar6', $documento->tipoCambioDolar);
+            $stmt->bindParam(':tipo_cambio_dolar7', $documento->tipoCambioDolar);
+            $stmt->bindParam(':tipo_cambio_dolar8', $documento->tipoCambioDolar);
+            $stmt->bindParam(':subtotal', $documento->subtotal);
+            $stmt->bindParam(':impuesto1', $documento->impuesto);
+            $stmt->bindParam(':impuesto2', $documento->impuesto);
+            $stmt->bindParam(':moneda', $documento->moneda);
+            $stmt->bindParam(':cliente1', $documento->cliente);
+            $stmt->bindParam(':cliente2', $documento->cliente);
+            $stmt->bindParam(':cliente3', $documento->cliente);
+            $stmt->bindParam(':subtipo', $documento->subtipo);
+            $stmt->bindParam(':usuario1', $usuario);
+            $stmt->bindParam(':usuario2', $usuario);
+            $stmt->bindParam(':usuario3', $usuario);
+            $stmt->bindParam(':usuario4', $usuario);
+            $stmt->bindParam(':usuario5', $usuario);
+            $stmt->bindParam(':usuario6', $usuario);
+            $stmt->bindParam(':usuario7', $usuario);
+            $stmt->bindParam(':usuario8', $usuario);
+            $stmt->bindParam(':referencia', $documento->referencia);
+
+            $stmt->execute();
+            $pdo->commit();
+        } catch (\PDOException $e) {
+            $pdo->rollBack();
+            throw new \RuntimeException("Error executing insert statement: " . $e->getMessage());
         }
     }
 
@@ -132,32 +401,6 @@ abstract class SoftlandHandler
     {
         /** @var DocumentoCC $documento */
         $documento = null;
-        /*$esquema = $this->config->get('DB_SCHEMA');
-        $sql = "SELECT DOCUMENTO, TIPO, SUBTIPO, MONEDA, MONTO, SALDO, SUBTOTAL, IMPUESTO1, DESCUENTO, TIPO_CAMBIO_DOLAR, FECHA, APLICACION, CLIENTE, REFERENCIA FROM {$esquema}.DOCUMENTO_CC WHERE DOCUMENTO = :DOCUMENTO";
-        $pdo = $this->db->getConnection();
-        $pdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
-        $stmt = $pdo->prepare($sql);
-        $stmt->bindParam(':DOCUMENTO', $documento, \PDO::PARAM_STR);
-        $stmt->execute();
-        $resultado = $stmt->fetch(\PDO::FETCH_ASSOC);
-        if($resultado)
-        {
-            $documento = new DocumentoCC();
-            $documento->documento = $resultado['DOCUMENTO'];
-            $documento->tipo = $resultado['TIPO'];
-            $documento->subtipo = $resultado['SUBTIPO'];
-            $documento->moneda = $resultado['MONEDA'];
-            $documento->monto = $resultado['MONTO'];
-            $documento->saldo = $resultado['SALDO'];
-            $documento->subtotal = $resultado['SUBTOTAL'];
-            $documento->impuesto = $resultado['IMPUESTO1'];
-            $documento->descuento = $resultado['DESCUENTO'];
-            $documento->tipoCambioDolar = $resultado['TIPO_CAMBIO_DOLAR'];
-            $documento->fecha = $resultado['FECHA'];
-            $documento->aplicacion = $resultado['APLICACION'];
-            $documento->cliente = $resultado['CLIENTE'];
-            $documento->referencia = $resultado['REFERENCIA'];
-        }*/
         $record =
             $this->db->table(Utils::tableSchema($this->config->get("DB_SCHEMA"), "DOCUMENTOS_CC"))
             ->select("DOCUMENTO, TIPO, SUBTIPO, MONEDA, MONTO, SALDO, SUBTOTAL, IMPUESTO1, DESCUENTO, TIPO_CAMBIO_DOLAR, FECHA, APLICACION, CLIENTE, REFERENCIA")
@@ -260,161 +503,4 @@ abstract class SoftlandHandler
      * @return void
      */
     public abstract function insertarDiario($documento, $cliente, $impuestos, $asiento);
-    //{
-    //    echo "insertarDiario\n";
-    //    $ln = ["p", "d"];
-    //    $lineas = [];
-    //    if ($documento->impuesto > 0) {
-    //        $ln[] = "i";
-    //    }
-    //    $global = 1;
-    //    // insertar primera linea debito
-    //    $linea = new Diario();
-    //    $linea->asiento = $asiento;
-    //    $linea->consecutivo = $global++;
-    //    $linea->nit = $cliente->nit;
-    //    $linea->centroCosto = $cliente->centroCosto;
-    //    $linea->cuentaContable = $cliente->cuentaContable;
-    //    $linea->fuente = $documento->documento;
-    //    $linea->referencia = $documento->documento;
-
-    //    if ($documento->moneda == "CRC") {
-    //        $linea->debitoLocal = $documento->monto;
-    //        $linea->debitoDolar = round($documento->monto / $documento->tipoCambioDolar, 2);
-    //    } else {
-    //        $linea->debitoLocal = round($documento->monto * $documento->tipoCambioDolar, 2);
-    //        $linea->debitoDolar = $documento->monto;
-    //    }
-    //    $linea->creditoLocal = null;
-    //    $linea->creditoDolar = null;
-    //    $linea->baseLocal = null;
-    //    $linea->baseDolar = null;
-    //    $linea->debitoUnidades = null;
-    //    $linea->creditoUnidades = null;
-    //    $linea->tipoCambio = $documento->tipoCambioDolar;
-    //    $lineas[] = $linea;
-
-
-    //    for ($i = 0; $i < count($ln); $i++) {
-    //        $linea = new Diario();
-    //        $linea->asiento = $asiento;
-    //        $linea->consecutivo = $global++;
-    //        $linea->nit = $cliente->nit;
-    //        // se obtiene del subtipo
-    //        if ($ln[$i] == "p") {
-    //            $linea->centroCosto = $documento->centroCosto;
-    //            $linea->cuentaContable = $documento->cuentaContable;
-    //        }
-    //        if ($ln[$i] == "i" && $impuesto != null) {
-    //            $linea->centroCosto = $impuesto->centroCosto;
-    //            $linea->cuentaContable = $impuesto->cuentaContable;
-    //        }
-
-    //        $linea->fuente = $documento->documento;
-    //        $linea->referencia = $documento->documento;
-
-    //        if ($ln[$i] == "p") // credito producto
-    //        {
-    //            if ($documento->moneda == "CRC") {
-    //                $linea->creditoLocal = $documento->subtotal;
-    //                $linea->creditoDolar = round($documento->subtotal / $documento->tipoCambioDolar, 2);
-    //            } else {
-    //                $linea->creditoLocal = round($documento->subtotal * $documento->tipoCambioDolar, 2);
-    //                $linea->creditoDolar = $documento->subtotal;
-    //            }
-    //            $linea->debitoLocal = null;
-    //            $linea->debitoDolar = null;
-    //            $linea->baseLocal = null;
-    //            $linea->baseDolar = null;
-    //        }
-
-    //        if ($ln[$i] == "d") // debito descuento
-    //        {
-    //            if ($documento->descuento == 0) {
-    //                continue;
-    //            }
-
-    //            if ($documento->moneda == "CRC") {
-    //                $linea->debitoLocal = $documento->descuento;
-    //                $linea->debitoDolar = round($documento->descuento / $documento->tipoCambioDolar, 2);
-    //            } else {
-    //                $linea->debitoLocal = round($documento->descuento * $documento->tipoCambioDolar, 2);
-    //                $linea->debitoDolar = $documento->descuento;
-    //            }
-
-    //            $linea->creditoLocal = null;
-    //            $linea->creditoDolar = null;
-    //            $linea->baseLocal = null;
-    //            $linea->baseDolar = null;
-    //        }
-
-    //        if ($ln[$i] == "i") // CREDITO IVA
-    //        {
-
-    //            if ($documento->impuesto == 0) {
-    //                continue;
-    //            }
-
-    //            echo "impuesto: " . $documento->impuesto . "\n";
-
-    //            $linea->debitoLocal = null;
-    //            $linea->debitoDolar = null;
-
-    //            if ($documento->moneda == "CRC") {
-    //                $linea->creditoLocal = $documento->impuesto;
-    //                $linea->creditoDolar = round($documento->impuesto / $documento->tipoCambioDolar, 2);
-
-    //            $linea->baseLocal = $documento->subtotal;
-    //            $linea->baseDolar = round($documento->subtotal / $documento->tipoCambioDolar, 2);
-    //        } else {
-    //            $linea->creditoLocal = round($documento->impuesto * $documento->tipoCambioDolar, 2);
-    //            $linea->creditoDolar = $documento->impuesto;
-
-    //            $linea->baseLocal = round($documento->subtotal * $documento->tipoCambioDolar, 2);
-    //            $linea->baseDolar = $documento->subtotal;
-    //        }
-    //        $linea->debitoUnidades = null;
-    //        $linea->creditoUnidades = null;
-    //        $linea->tipoCambio = $documento->tipoCambioDolar;
-    //        $lineas[] = $linea;
-    //    }
-
-    //    $esquema = $this->config->get('DB_SCHEMA');
-    //    $sql = " INSERT INTO {$esquema}.DIARIO (ASIENTO, CONSECUTIVO, NIT, CENTRO_COSTO, CUENTA_CONTABLE, FUENTE, REFERENCIA,
-    //           DEBITO_LOCAL, DEBITO_DOLAR, CREDITO_LOCAL, CREDITO_DOLAR, DEBITO_UNIDADES, CREDITO_UNIDADES,
-    //           TIPO_CAMBIO, BASE_LOCAL, BASE_DOLAR) VALUES(:ASIENTO, :CONSECUTIVO, :NIT, :CENTRO_COSTO, :CUENTA_CONTABLE, :FUENTE, :REFERENCIA,
-    //           :DEBITO_LOCAL, :DEBITO_DOLAR, :CREDITO_LOCAL, :CREDITO_DOLAR, :DEBITO_UNIDADES, :CREDITO_UNIDADES,
-    //           :TIPO_CAMBIO, :BASE_LOCAL, :BASE_DOLAR);";
-
-    //    $pdo = $this->db->getConnection();
-    //    $pdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
-    //    $pdo->beginTransaction();
-    //    try {
-    //        foreach ($lineas as $linea) {
-    //            $stmt = $pdo->prepare($sql);
-    //            $stmt->bindParam(':ASIENTO', $linea->asiento, \PDO::PARAM_STR);
-    //            $stmt->bindParam(':CONSECUTIVO', $linea->consecutivo);
-    //            $stmt->bindParam(':NIT', $linea->nit, \PDO::PARAM_STR);
-    //            $stmt->bindParam(':CENTRO_COSTO', $linea->centroCosto, \PDO::PARAM_STR);
-    //            $stmt->bindParam(':CUENTA_CONTABLE', $linea->cuentaContable, \PDO::PARAM_STR);
-    //            $stmt->bindParam(':FUENTE', $linea->fuente, \PDO::PARAM_STR);
-    //            $stmt->bindParam(':REFERENCIA', $linea->referencia, \PDO::PARAM_STR);
-    //            $stmt->bindParam(':DEBITO_LOCAL', $linea->debitoLocal);
-    //            $stmt->bindParam(':DEBITO_DOLAR', $linea->debitoDolar);
-    //            $stmt->bindParam(':CREDITO_LOCAL', $linea->creditoLocal);
-    //            $stmt->bindParam(':CREDITO_DOLAR', $linea->creditoDolar);
-    //            $stmt->bindParam(':DEBITO_UNIDADES', $linea->debitoUnidades);
-    //            $stmt->bindParam(':CREDITO_UNIDADES', $linea->creditoUnidades);
-    //            $stmt->bindParam(':TIPO_CAMBIO', $linea->tipoCambio);
-    //            $stmt->bindParam(':BASE_LOCAL', $linea->baseLocal);
-    //            $stmt->bindParam(':BASE_DOLAR', $linea->baseDolar);
-    //            $stmt->execute();
-    //        }
-    //        $pdo->commit();
-    //        echo "Stored procedure executed successfully.\n";
-    //    } catch (\PDOException $e) {
-    //        $pdo->rollBack();
-    //        die("Error executing stored procedure: " . $e->getMessage());
-    //    }
-    //}
 }

@@ -60,8 +60,8 @@ $notasCredito = new NotaCreditoHandler($config);
 //$facturas->insertarCC("FAC-0002", $codigoCliente, 10000, 10000, 1);
 //$facturas->insertarCC("FAC", "FAC-0004", $codigoCliente, 10000, 10000, 1);
 
-$numFactura = "FAC-000104";
-$numNotaCredito = "NC-000102";
+$numFactura = "FAC-000105";
+$numNotaCredito = "NC-000103";
 
 $factura = new DocumentoCC();
 $factura->documento = $numFactura;
@@ -74,11 +74,13 @@ $factura->impuesto = 130;
 $factura->fecha = "2025-03-24 08:00:00";
 $factura->descuento = 0;
 $factura->monto = 1130;
+$factura->saldo = 1130;
 $factura->tipo = "FAC";
 $factura->subtipo = 0;
 $factura->cliente = $codigoCliente;
 $factura->centroCostoImpuesto = "00-00-00";
 $factura->cuentaContableImpuesto = "1-01-05-001-002";
+$factura->aplicacion = "ND";
 
 $facturas->insertarDocumentoCC($factura);
 
@@ -141,6 +143,7 @@ $notaCredito->impuesto = 130;
 $notaCredito->fecha = "2025-03-24 08:00:00";
 $notaCredito->descuento = 0;
 $notaCredito->monto = 1130;
+$notaCredito->saldo = 0;
 $notaCredito->tipo = "FAC";
 $notaCredito->subtipo = 0;
 $notaCredito->cliente = $codigoCliente;
