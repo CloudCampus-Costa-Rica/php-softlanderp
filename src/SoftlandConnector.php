@@ -49,77 +49,96 @@ class SoftlandConnector
      */
     public function registrar_factura($factura, $impuestos)
     {
-        $facturaHandler = new FacturaHandler($this->config);
+        $pdo = $this->db->getConnection();
+        $pdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
+        $pdo->beginTransaction();
 
-        $clienteHandler = new ClienteHandler($this->config);
-        if($factura->cliente == null)
-        {
-            $cliente = $clienteHandler->consultarCliente($factura->cliente);
+        try {
+            $facturaHandler = new FacturaHandler($this->config);
+            $clienteHandler = new ClienteHandler($this->config);
+            
+            if($factura->cliente == null)
+            {
+                $cliente = $clienteHandler->consultarCliente($factura->cliente);
+            }
+
+            if($cliente == null && $factura->nit != null)
+            {
+                $cliente = $clienteHandler->consultarClienteNit($factura->nit);
+            }
+
+            if($cliente == null)
+            {
+                throw new \Exception("Cliente no encontrado");
+            }
+
+            $factura->cliente = $cliente->codigo;
+            $facturaHandler->insertarDocumentoCC($factura, $pdo);
+
+            // crear asiento de notaCredito
+            $paquete = "CC";
+            $tipoAsiento = "CC";
+            $asiento = $facturaHandler->obtenerConsecutivoPaquete("CC", $pdo);
+            $facturaHandler->insertarAsientoDeDiario($factura, $asiento, $paquete, $tipoAsiento, $pdo);
+            $facturaHandler->insertarDiario($factura, $cliente, $impuestos, $asiento, $pdo);
+
+            $pdo->commit();
+        } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw new \RuntimeException("Error al registrar factura: " . $e->getMessage());
         }
-
-        if($cliente == null && $factura->nit != null)
-        {
-            $cliente = $clienteHandler->consultarClienteNit($factura->nit);
-        }
-
-        if($cliente == null)
-        {
-            throw new \Exception("Cliente no encontrado");
-        }
-
-        $factura->cliente = $cliente->codigo;
-        $facturaHandler->insertarDocumentoCC($factura);
-
-        // crear asiento de notaCredito
-        $paquete = "CC";
-        $tipoAsiento = "CC";
-        $asiento =  $facturaHandler->obtenerConsecutivoPaquete("CC");
-        $facturaHandler->insertarAsientoDeDiario($factura, $asiento, $paquete, $tipoAsiento);
-        $facturaHandler->insertarDiario($factura, $cliente, $impuestos, $asiento);
-        
     }
 
     /**
      * @param DocumentoCC $recibo
      * @param boolean $aplicar indica si se aplica el recibo a la factura
      */
-    public function registrar_recibo($recibo, $aplicar= false)
+    public function registrar_recibo($recibo, $aplicar = false)
     {
+        $pdo = $this->db->getConnection();
+        $pdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
+        $pdo->beginTransaction();
 
-        $softlandHandler = new SoftlandHandler($this->config);
-        $factura = $softlandHandler->consultarDocumentoCC($recibo->documentoAplicacion);
+        try {
+            $softlandHandler = new SoftlandHandler($this->config);
+            $factura = $softlandHandler->consultarDocumentoCC($recibo->documentoAplicacion);
 
-        if($factura == null)
-        {
-            throw new \Exception("Factura [{$recibo->documentoAplicacion}] no encontrada");
+            if($factura == null)
+            {
+                throw new \Exception("Factura [{$recibo->documentoAplicacion}] no encontrada");
+            }
+
+            $clienteHandler = new ClienteHandler($this->config);
+            $cliente = $clienteHandler->consultarCliente($factura->cliente);
+
+            $reciboHandler = new ReciboHandler($this->config);
+            $reciboHandler->insertarDocumentoCC($recibo, $pdo);
+
+            if($aplicar){
+                // crear auxiliar de recibo
+                $auxiliarHandler = new AuxiliarCCHandler($this->config);
+                $auxiliar = new AuxiliarCC();
+                $auxiliar->tipoCredito = $recibo->tipo;
+                $auxiliar->tipoDebito = $factura->tipo;
+                $auxiliar->docCredito = $recibo->documento;
+                $auxiliar->docDebito = $factura->documento;
+                $auxiliar->monto = $recibo->monto;
+                $auxiliar->tipoCambioDolar = $recibo->tipoCambioDolar;
+                $auxiliarHandler->insertar($auxiliar, $pdo);
+            }
+
+            // crear asiento de recibo
+            $paquete = "CC";
+            $tipoAsiento = "CC";
+            $asiento = $reciboHandler->obtenerConsecutivoPaquete("CC", $pdo);
+            $reciboHandler->insertarAsientoDeDiario($recibo, $asiento, $paquete, $tipoAsiento, $pdo);
+            $reciboHandler->insertarDiario($recibo, $cliente, null, $asiento, $pdo);
+
+            $pdo->commit();
+        } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw new \RuntimeException("Error al registrar recibo: " . $e->getMessage());
         }
-
-        $clienteHandler = new ClienteHandler($this->config);
-        $cliente = $clienteHandler->consultarCliente($factura->cliente);
-
-        $reciboHandler = new ReciboHandler($this->config);
-        $reciboHandler->insertarDocumentoCC($recibo);
-
-        if($aplicar){
-            // crear auxiliar de recibo
-            $auxiliarHandler = new AuxiliarCCHandler($this->config);
-            $auxiliar = new AuxiliarCC();
-            $auxiliar->tipoCredito = $recibo->tipo;
-            $auxiliar->tipoDebito = $factura->tipo;
-            $auxiliar->docCredito = $recibo->documento;
-            $auxiliar->docDebito = $factura->documento;
-            $auxiliar->monto = $recibo->monto;
-            $auxiliar->tipoCambioDolar = $recibo->tipoCambioDolar;
-            $auxiliarHandler->insertar($auxiliar);
-        }
-
-        // crear asiento de recibo
-        $paquete = "CC";
-        $tipoAsiento = "CC";
-        $asiento =  $reciboHandler->obtenerConsecutivoPaquete("CC");
-        $reciboHandler->insertarAsientoDeDiario($recibo, $asiento, $paquete, $tipoAsiento);
-        // validar si hay que extraer las deducciones del recibo de acuerdo al tipo de pago
-        $reciboHandler->insertarDiario($recibo, $cliente, null, $asiento);
     }
 
     /**
@@ -132,41 +151,51 @@ class SoftlandConnector
      *  - nombre
      * @param boolean $aplicar indica si se aplica la notaCredito a la factura
      */
-    public function registrar_notaCredito($notaCredito, $impuestos, $aplicar= false)
+    public function registrar_notaCredito($notaCredito, $impuestos, $aplicar = false)
     {
-        $softlandHandler = new SoftlandHandler($this->config);
-        $factura = $softlandHandler->consultarDocumentoCC($notaCredito->documentoAplicacion);
+        $pdo = $this->db->getConnection();
+        $pdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
+        $pdo->beginTransaction();
 
-        if($factura == null)
-        {
-            throw new \Exception("Factura [{$notaCredito->documentoAplicacion}] no encontrada");
+        try {
+            $softlandHandler = new SoftlandHandler($this->config);
+            $factura = $softlandHandler->consultarDocumentoCC($notaCredito->documentoAplicacion);
+
+            if($factura == null)
+            {
+                throw new \Exception("Factura [{$notaCredito->documentoAplicacion}] no encontrada");
+            }
+
+            $clienteHandler = new ClienteHandler($this->config);
+            $cliente = $clienteHandler->consultarCliente($factura->cliente);
+
+            $notaCreditoHandler = new NotaCreditoHandler($this->config);
+            $notaCreditoHandler->insertarDocumentoCC($notaCredito, $pdo);
+
+            if($aplicar){
+                // crear auxiliar de notaCredito
+                $auxiliarHandler = new AuxiliarCCHandler($this->config);
+                $auxiliar = new AuxiliarCC();
+                $auxiliar->tipoCredito = $notaCredito->tipo;
+                $auxiliar->tipoDebito = $factura->tipo;
+                $auxiliar->docCredito = $notaCredito->documento;
+                $auxiliar->docDebito = $factura->documento;
+                $auxiliar->monto = $notaCredito->monto;
+                $auxiliar->tipoCambioDolar = $notaCredito->tipoCambioDolar;
+                $auxiliarHandler->insertar($auxiliar, $pdo);
+            }
+
+            $paquete = "CC";
+            $tipoAsiento = "CC";
+            $asiento = $notaCreditoHandler->obtenerConsecutivoPaquete("CC", $pdo);
+            $notaCreditoHandler->insertarAsientoDeDiario($notaCredito, $asiento, $paquete, $tipoAsiento, $pdo);
+            $notaCreditoHandler->insertarDiario($notaCredito, $cliente, $impuestos, $asiento, $pdo);
+
+            $pdo->commit();
+        } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw new \RuntimeException("Error al registrar nota de crédito: " . $e->getMessage());
         }
-
-        $clienteHandler = new ClienteHandler($this->config);
-        $cliente = $clienteHandler->consultarCliente($factura->cliente);
-
-        $notaCreditoHandler = new NotaCreditoHandler($this->config);
-        $notaCreditoHandler->insertarDocumentoCC($notaCredito);
-
-        if($aplicar){
-            // crear auxiliar de notaCredito
-            $auxiliarHandler = new AuxiliarCCHandler($this->config);
-            $auxiliar = new AuxiliarCC();
-            $auxiliar->tipoCredito = $notaCredito->tipo;
-            $auxiliar->tipoDebito = $factura->tipo;
-            $auxiliar->docCredito = $notaCredito->documento;
-            $auxiliar->docDebito = $factura->documento;
-            $auxiliar->monto = $notaCredito->monto;
-            $auxiliar->tipoCambioDolar = $notaCredito->tipoCambioDolar;
-            $auxiliarHandler->insertar($auxiliar);
-        }
-
-        // crear asiento de notaCredito
-        $paquete = "CC";
-        $tipoAsiento = "CC";
-        $asiento =  $notaCreditoHandler->obtenerConsecutivoPaquete("CC");
-        $notaCreditoHandler->insertarAsientoDeDiario($notaCredito, $asiento, $paquete, $tipoAsiento);
-        $notaCreditoHandler->insertarDiario($notaCredito, $cliente, $impuestos, $asiento);
     }
     
 }

@@ -29,7 +29,7 @@ abstract class SoftlandHandler
      * @param DocumentoCC $documento
      * @return void
      */
-    public function insertarDocumentoCC($documento)
+    public function insertarDocumentoCC($documento, $pdo = null)
     {
         $esquema = $this->config->get('DB_SCHEMA');
         $usuario = $this->config->get('DB_USERNAME');
@@ -143,13 +143,18 @@ abstract class SoftlandHandler
                     '630401'
                 )";
 
-        // Prepare the statement
-        $pdo = $this->db->getConnection();
-        $pdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
-        $pdo->beginTransaction();
+        // Use provided PDO connection or get a new one
+        $usePdo = $pdo ?: $this->db->getConnection();
+        
+        // Remove transaction handling if PDO was provided
+        $newTransaction = !$pdo;
+        if ($newTransaction) {
+            $usePdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
+            $usePdo->beginTransaction();
+        }
 
         try {
-            $stmt = $pdo->prepare($sql);
+            $stmt = $usePdo->prepare($sql);
             
             // Bind parameters
             $stmt->bindParam(':documento', $documento->documento, \PDO::PARAM_STR);
@@ -189,208 +194,56 @@ abstract class SoftlandHandler
             $stmt->bindParam(':usuario8', $usuario, \PDO::PARAM_STR);
 
             $stmt->execute();
-            $pdo->commit();
-        } catch (\PDOException $e) {
-            $pdo->rollBack();
-            throw new \RuntimeException("Error executing insert statement: " . $e->getMessage());
-        }
-    }
-
-    public function insertarDocumentoCCOld($documento)
-    {
-        $esquema = $this->config->get('DB_DATABASE');
-        $usuario = $this->config->get('DB_USERNAME');
-        
-        $sql = "INSERT INTO [{$esquema}].DOCUMENTOS_CC (
-                    DOCUMENTO,
-                    TIPO,
-                    APLICACION,
-                    FECHA_DOCUMENTO,
-                    FECHA,
-                    MONTO,
-                    SALDO,
-                    MONTO_LOCAL,
-                    SALDO_LOCAL,
-                    MONTO_DOLAR,
-                    SALDO_DOLAR,
-                    MONTO_CLIENTE,
-                    SALDO_CLIENTE,
-                    TIPO_CAMBIO_MONEDA,
-                    TIPO_CAMBIO_DOLAR,
-                    TIPO_CAMBIO_CLIENT,
-                    TIPO_CAMB_ACT_LOC,
-                    TIPO_CAMB_ACT_DOL,
-                    TIPO_CAMB_ACT_CLI,
-                    SUBTOTAL,
-                    DESCUENTO,
-                    IMPUESTO1,
-                    IMPUESTO2,
-                    RUBRO1,
-                    RUBRO2,
-                    MONTO_RETENCION,
-                    SALDO_RETENCION,
-                    BASE_IMPUESTO1,
-                    DEPENDIENTE,
-                    FECHA_ULT_CREDITO,
-                    CARGADO_DE_FACT,
-                    APROBADO,
-                    ASIENTO_PENDIENTE,
-                    FECHA_ULT_MOD,
-                    NOTAS,
-                    CLASE_DOCUMENTO,
-                    FECHA_VENCE,
-                    NUM_PARCIALIDADES,
-                    USUARIO_ULT_MOD,
-                    CONDICION_PAGO,
-                    MONEDA,
-                    CLIENTE_REPORTE,
-                    CLIENTE_ORIGEN,
-                    CLIENTE,
-                    SUBTIPO,
-                    PORC_INTCTE,
-                    NUM_DOC_CB,
-                    USUARIO_APROBACION,
-                    U_REFERENCIA_TOURPLAN,
-                    FECHA_APROBACION,
-                    ANULADO,
-                    CODIGO_IMPUESTO,
-                    ACTIVIDAD_COMERCIAL
-                ) VALUES (
-                    :documento,
-                    :tipo,
-                    :aplicacion,
-                    :fecha,
-                    :fecha2,
-                    :monto,
-                    :saldo,
-                    (:monto * :tipo_cambio_dolar1),
-                    (:saldo * :tipo_cambio_dolar2),
-                    :monto,
-                    :saldo,
-                    :monto,
-                    :saldo,
-                    :tipo_cambio_dolar3,
-                    :tipo_cambio_dolar4,
-                    :tipo_cambio_dolar5,
-                    :tipo_cambio_dolar6,
-                    :tipo_cambio_dolar7,
-                    :tipo_cambio_dolar8,
-                    :subtotal,
-                    0,
-                    :impuesto1,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    :impuesto2,
-                    'N',
-                    '1980-01-01 00:00:00',
-                    'N',
-                    'S',
-                    'N',
-                    CONVERT(VARCHAR, DATEADD(day, DATEDIFF(day, 0, GETDATE()), 0),
-                    'Documento creado desde el sistema de Pagares para cancelar Facturas Modificadas',
-                    'N',
-                    CONVERT(VARCHAR, DATEADD(day, DATEDIFF(day, 0, GETDATE()), 0),
-                    0,
-                    (CASE WHEN UPPER(:usuario1) LIKE 'X%' THEN SUBSTRING(:usuario2, 2, LEN(:usuario3)) ELSE :usuario4 END),
-                    0,
-                    :moneda,
-                    :cliente1,
-                    :cliente2,
-                    :cliente3,
-                    :subtipo,
-                    0,
-                    0,
-                    (CASE WHEN UPPER(:usuario5) LIKE 'X%' THEN SUBSTRING(:usuario6, 2, LEN(:usuario7)) ELSE :usuario8 END),
-                    :referencia,
-                    CONVERT(VARCHAR, DATEADD(day, DATEDIFF(day, 0, GETDATE()), 0),
-                    'N',
-                    '1',
-                    '630401'
-                )";
-
-        $pdo = $this->db->getConnection();
-        $pdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
-        $pdo->beginTransaction();
-
-        try {
-            $stmt = $pdo->prepare($sql);
             
-            // Bind parameters
-            $stmt->bindParam(':documento', $documento->documento);
-            $stmt->bindParam(':tipo', $documento->tipo);
-            $stmt->bindParam(':aplicacion', $documento->aplicacion);
-            $stmt->bindParam(':fecha', $documento->fecha);
-            $stmt->bindParam(':fecha2', $documento->fecha);
-            $stmt->bindParam(':monto', $documento->monto);
-            $stmt->bindParam(':saldo', $documento->saldo);
-            $stmt->bindParam(':tipo_cambio_dolar1', $documento->tipoCambioDolar);
-            $stmt->bindParam(':tipo_cambio_dolar2', $documento->tipoCambioDolar);
-            $stmt->bindParam(':tipo_cambio_dolar3', $documento->tipoCambioDolar);
-            $stmt->bindParam(':tipo_cambio_dolar4', $documento->tipoCambioDolar);
-            $stmt->bindParam(':tipo_cambio_dolar5', $documento->tipoCambioDolar);
-            $stmt->bindParam(':tipo_cambio_dolar6', $documento->tipoCambioDolar);
-            $stmt->bindParam(':tipo_cambio_dolar7', $documento->tipoCambioDolar);
-            $stmt->bindParam(':tipo_cambio_dolar8', $documento->tipoCambioDolar);
-            $stmt->bindParam(':subtotal', $documento->subtotal);
-            $stmt->bindParam(':impuesto1', $documento->impuesto);
-            $stmt->bindParam(':impuesto2', $documento->impuesto);
-            $stmt->bindParam(':moneda', $documento->moneda);
-            $stmt->bindParam(':cliente1', $documento->cliente);
-            $stmt->bindParam(':cliente2', $documento->cliente);
-            $stmt->bindParam(':cliente3', $documento->cliente);
-            $stmt->bindParam(':subtipo', $documento->subtipo);
-            $stmt->bindParam(':usuario1', $usuario);
-            $stmt->bindParam(':usuario2', $usuario);
-            $stmt->bindParam(':usuario3', $usuario);
-            $stmt->bindParam(':usuario4', $usuario);
-            $stmt->bindParam(':usuario5', $usuario);
-            $stmt->bindParam(':usuario6', $usuario);
-            $stmt->bindParam(':usuario7', $usuario);
-            $stmt->bindParam(':usuario8', $usuario);
-            $stmt->bindParam(':referencia', $documento->referencia);
-
-            $stmt->execute();
-            $pdo->commit();
+            if ($newTransaction) {
+                $usePdo->commit();
+            }
         } catch (\PDOException $e) {
-            $pdo->rollBack();
+            if ($newTransaction) {
+                $usePdo->rollBack();
+            }
             throw new \RuntimeException("Error executing insert statement: " . $e->getMessage());
         }
     }
 
     /**
      * @param string $paquete
+     * @param PDO|null $pdo
      * @return string|null
      */
-    public function obtenerConsecutivoPaquete($paquete)
+    public function obtenerConsecutivoPaquete($paquete, $pdo = null)
     {
         // obtener consecutivo paquete
-        // invocar stored procedude [FUNDEPOS].[GenerarSiguienteConsecutivoPaquete], el resultado se obtiene de un select que se ejcuta dentro del procedure
-        $usuario = $this->config->get('DB_USERNAME');
+        // invocar stored procedude [FUNDEPOS].[GenerarSiguienteConsecutivoPaquete]
         $esquema = $this->config->get('DB_SCHEMA');
         $sql = "EXEC [{$esquema}].[GenerarSiguienteConsecutivoPaquete] @PAQUETE = :PAQUETE";
-        // Prepare the statement
-        $pdo = $this->db->getConnection();
+        
+        // Use provided PDO connection or get a new one
+        $usePdo = $pdo ?: $this->db->getConnection();
+        
+        // Remove transaction handling if PDO was provided
+        $newTransaction = !$pdo;
+        if ($newTransaction) {
+            $usePdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
+            $usePdo->beginTransaction();
+        }
 
-        // Set the transaction isolation level
-        $pdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
-
-        // Begin a transaction
-        $pdo->beginTransaction();
-        $stmt = $pdo->prepare($sql);
-        $stmt->bindParam(':PAQUETE', $paquete, \PDO::PARAM_STR);
-
-        // Execute the statement
         try {
+            $stmt = $usePdo->prepare($sql);
+            $stmt->bindParam(':PAQUETE', $paquete, \PDO::PARAM_STR);
             $stmt->execute();
             $resultado = $stmt->fetch(\PDO::FETCH_ASSOC);
-            $pdo->commit();
+            
+            if ($newTransaction) {
+                $usePdo->commit();
+            }
+            
             return $resultado['VALOR_CONSECUTIVO'];
         } catch (\PDOException $e) {
-            $pdo->rollBack();
-            die("Error executing stored procedure: " . $e->getMessage());
+            if ($newTransaction) {
+                $usePdo->rollBack();
+            }
+            throw new \RuntimeException("Error executing stored procedure: " . $e->getMessage());
         }
     }
 
@@ -438,7 +291,7 @@ abstract class SoftlandHandler
      * @param string $tipoAsiento
      * @return void
      */
-    public function insertarAsientoDeDiario($documento, $asiento, $paquete, $tipoAsiento)
+    public function insertarAsientoDeDiario($documento, $asiento, $paquete, $tipoAsiento, $pdo = null)
     {
         echo "insertarAsientoDeDiario\n";
         $esquema = $this->config->get('DB_SCHEMA');
@@ -451,48 +304,59 @@ abstract class SoftlandHandler
         GETDATE(), :MARCADO, :NOTAS, :TOTAL_CONTROL_LOC, :TOTAL_CONTROL_DOL, :USUARIO_CREACION, 
         GETDATE() );";
 
-        $pdo = $this->db->getConnection();
-        $pdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
-        $pdo->beginTransaction();
-
-        $stmt = $pdo->prepare($sql);
-
-        $stmt->bindParam(':ASIENTO', $asiento, \PDO::PARAM_STR);
-        $stmt->bindParam(':PAQUETE', $paquete, \PDO::PARAM_STR);
-        $stmt->bindParam(':TIPO_ASIENTO', $tipoAsiento, \PDO::PARAM_STR);
-        $stmt->bindParam(':FECHA', $documento->fecha, \PDO::PARAM_STR);
-        $stmt->bindValue(':CONTABILIDAD', "F", \PDO::PARAM_STR);
-        $stmt->bindValue(':ORIGEN', "CC", \PDO::PARAM_STR);
-        $stmt->bindValue(':CLASE_ASIENTO', "N", \PDO::PARAM_STR);
-        $stmt->bindValue(':MARCADO', "N", \PDO::PARAM_STR);
-        $stmt->bindValue(':NOTAS', "", \PDO::PARAM_STR);
-        $stmt->bindValue(':ULTIMO_USUARIO', $usuario, \PDO::PARAM_STR);
-        $stmt->bindValue(':USUARIO_CREACION', $usuario, \PDO::PARAM_STR);
-
-        if ($documento->moneda == "CRC")
-        {
-            $stmt->bindParam(':TOTAL_CONTROL_LOC', $documento->monto);
-            $stmt->bindValue(':TOTAL_CONTROL_DOL', round($documento->monto / $documento->tipoCambioDolar, 2));            
-            $stmt->bindParam(':TOTAL_DEBITO_LOC', $documento->monto);
-            $stmt->bindValue(':TOTAL_DEBITO_DOL', round($documento->monto / $documento->tipoCambioDolar, 2));
-            $stmt->bindParam(':TOTAL_CREDITO_LOC', $documento->monto);
-            $stmt->bindValue(':TOTAL_CREDITO_DOL', round($documento->monto / $documento->tipoCambioDolar, 2));
-        }
-        else
-        {
-            $stmt->bindValue(':TOTAL_CONTROL_LOC', round($documento->monto * $documento->tipoCambioDolar, 2));
-            $stmt->bindParam(':TOTAL_CONTROL_DOL', $documento->monto);
-            $stmt->bindValue(':TOTAL_DEBITO_LOC', round($documento->monto * $documento->tipoCambioDolar, 2));
-            $stmt->bindParam(':TOTAL_DEBITO_DOL', $documento->monto);
-            $stmt->bindValue(':TOTAL_CREDITO_LOC', round($documento->monto * $documento->tipoCambioDolar, 2));
-            $stmt->bindParam(':TOTAL_CREDITO_DOL', $documento->monto); 
-        }
+        // Use provided PDO connection or get a new one
+        $usePdo = $pdo ?: $this->db->getConnection();
         
+        // Remove transaction handling if PDO was provided
+        $newTransaction = !$pdo;
+        if ($newTransaction) {
+            $usePdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
+            $usePdo->beginTransaction();
+        }
+
         try {
+            $stmt = $usePdo->prepare($sql);
+
+            $stmt->bindParam(':ASIENTO', $asiento, \PDO::PARAM_STR);
+            $stmt->bindParam(':PAQUETE', $paquete, \PDO::PARAM_STR);
+            $stmt->bindParam(':TIPO_ASIENTO', $tipoAsiento, \PDO::PARAM_STR);
+            $stmt->bindParam(':FECHA', $documento->fecha, \PDO::PARAM_STR);
+            $stmt->bindValue(':CONTABILIDAD', "F", \PDO::PARAM_STR);
+            $stmt->bindValue(':ORIGEN', "CC", \PDO::PARAM_STR);
+            $stmt->bindValue(':CLASE_ASIENTO', "N", \PDO::PARAM_STR);
+            $stmt->bindValue(':MARCADO', "N", \PDO::PARAM_STR);
+            $stmt->bindValue(':NOTAS', "", \PDO::PARAM_STR);
+            $stmt->bindValue(':ULTIMO_USUARIO', $usuario, \PDO::PARAM_STR);
+            $stmt->bindValue(':USUARIO_CREACION', $usuario, \PDO::PARAM_STR);
+
+            if ($documento->moneda == "CRC")
+            {
+                $stmt->bindParam(':TOTAL_CONTROL_LOC', $documento->monto);
+                $stmt->bindValue(':TOTAL_CONTROL_DOL', round($documento->monto / $documento->tipoCambioDolar, 2));            
+                $stmt->bindParam(':TOTAL_DEBITO_LOC', $documento->monto);
+                $stmt->bindValue(':TOTAL_DEBITO_DOL', round($documento->monto / $documento->tipoCambioDolar, 2));
+                $stmt->bindParam(':TOTAL_CREDITO_LOC', $documento->monto);
+                $stmt->bindValue(':TOTAL_CREDITO_DOL', round($documento->monto / $documento->tipoCambioDolar, 2));
+            }
+            else
+            {
+                $stmt->bindValue(':TOTAL_CONTROL_LOC', round($documento->monto * $documento->tipoCambioDolar, 2));
+                $stmt->bindParam(':TOTAL_CONTROL_DOL', $documento->monto);
+                $stmt->bindValue(':TOTAL_DEBITO_LOC', round($documento->monto * $documento->tipoCambioDolar, 2));
+                $stmt->bindParam(':TOTAL_DEBITO_DOL', $documento->monto);
+                $stmt->bindValue(':TOTAL_CREDITO_LOC', round($documento->monto * $documento->tipoCambioDolar, 2));
+                $stmt->bindParam(':TOTAL_CREDITO_DOL', $documento->monto); 
+            }
+            
             $stmt->execute();
-            $pdo->commit();            
+            
+            if ($newTransaction) {
+                $usePdo->commit();
+            }
         } catch (\PDOException $e) {
-            $pdo->rollBack();
+            if ($newTransaction) {
+                $usePdo->rollBack();
+            }
             die("Error executing stored procedure: " . $e->getMessage());
         }
     }

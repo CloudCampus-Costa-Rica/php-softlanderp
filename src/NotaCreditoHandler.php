@@ -19,9 +19,10 @@ class NotaCreditoHandler extends SoftlandHandler
      * @param Cliente $cliente
      * @param array $impuestos
      * @param string $asiento
+     * @param PDO|null $pdo
      * @return void
      */
-    public function insertarDiario($documento, $cliente, $impuestos, $asiento)
+    public function insertarDiario($documento, $cliente, $impuestos, $asiento, $pdo = null)
     {
         $ln = ["p", "d"];
         $lineas = [];
@@ -148,12 +149,19 @@ class NotaCreditoHandler extends SoftlandHandler
                :DEBITO_LOCAL, :DEBITO_DOLAR, :CREDITO_LOCAL, :CREDITO_DOLAR, :DEBITO_UNIDADES, :CREDITO_UNIDADES,
                :TIPO_CAMBIO, :BASE_LOCAL, :BASE_DOLAR);";
 
-        $pdo = $this->db->getConnection();
-        $pdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
-        $pdo->beginTransaction();
+        // Use provided PDO connection or get a new one
+        $usePdo = $pdo ?: $this->db->getConnection();
+        
+        // Remove transaction handling if PDO was provided
+        $newTransaction = !$pdo;
+        if ($newTransaction) {
+            $usePdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
+            $usePdo->beginTransaction();
+        }
+
         try {
             foreach ($lineas as $linea) {
-                $stmt = $pdo->prepare($sql);
+                $stmt = $usePdo->prepare($sql);
                 $stmt->bindParam(':ASIENTO', $linea->asiento, \PDO::PARAM_STR);
                 $stmt->bindParam(':CONSECUTIVO', $linea->consecutivo);
                 $stmt->bindParam(':NIT', $linea->nit, \PDO::PARAM_STR);
@@ -172,10 +180,15 @@ class NotaCreditoHandler extends SoftlandHandler
                 $stmt->bindParam(':BASE_DOLAR', $linea->baseDolar);
                 $stmt->execute();
             }
-            $pdo->commit();
+            
+            if ($newTransaction) {
+                $usePdo->commit();
+            }
         } catch (\PDOException $e) {
-            $pdo->rollBack();
-            die("Error executing stored procedure: " . $e->getMessage());
+            if ($newTransaction) {
+                $usePdo->rollBack();
+            }
+            throw new \RuntimeException("Error executing insert statement: " . $e->getMessage());
         }
     }
 }

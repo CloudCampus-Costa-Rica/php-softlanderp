@@ -25,8 +25,10 @@ class AuxiliarCCHandler
 
     /**
      * @param AuxiliarCC $auxiliarCC
+     * @param PDO|null $pdo
+     * @return void
      */
-    public function insertar($auxiliarCC)
+    public function insertar($auxiliarCC, $pdo = null)
     {
         // Prepare the SQL statement with placeholders for input parameters
         $sql = "EXEC dbo.SP_CREAR_AUXILIAR_CC 
@@ -41,16 +43,17 @@ class AuxiliarCCHandler
                     @ESQUEMA                 = :ESQUEMA,
                     @USUARIO                = :USUARIO";
 
-        // Prepare the statement
-        $pdo = $this->db->getConnection();
+        // Use provided PDO connection or get a new one
+        $usePdo = $pdo ?: $this->db->getConnection();
+        
+        // Remove transaction handling if PDO was provided
+        $newTransaction = !$pdo;
+        if ($newTransaction) {
+            $usePdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
+            $usePdo->beginTransaction();
+        }
 
-        // Set the transaction isolation level
-        $pdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
-
-        // Begin a transaction
-        $pdo->beginTransaction();
-
-        $stmt = $pdo->prepare($sql);
+        $stmt = $usePdo->prepare($sql);
 
         // Bind the input parameters to the placeholders
         $usuario = $this->config->get('DB_USERNAME');
@@ -66,19 +69,17 @@ class AuxiliarCCHandler
         $stmt->bindParam(':ESQUEMA', $esquema, \PDO::PARAM_STR);
         $stmt->bindParam(':USUARIO', $usuario, \PDO::PARAM_STR);
 
-        // Execute the statement
         try {
             $stmt->execute();
-            // Commit the transaction
-            //$resultado = $stmt->fetch(\PDO::FETCH_ASSOC);
-            //print_r($resultado);
-            $pdo->commit();
-
-            echo "Stored procedure executed successfully.\n";
+            
+            if ($newTransaction) {
+                $usePdo->commit();
+            }
         } catch (\PDOException $e) {
-            // Rollback the transaction if an error occurs
-            $pdo->rollBack();
-            die("Error executing stored procedure: " . $e->getMessage());
+            if ($newTransaction) {
+                $usePdo->rollBack();
+            }
+            throw new \RuntimeException("Error executing stored procedure: " . $e->getMessage());
         }
     }
 }
