@@ -258,7 +258,7 @@ abstract class SoftlandHandler
         $documento = null;
         $record =
             $this->db->table(Utils::tableSchema($this->config->get("DB_SCHEMA"), "DOCUMENTOS_CC"))
-            ->select("DOCUMENTO, TIPO, SUBTIPO, MONEDA, MONTO, SALDO, SUBTOTAL, IMPUESTO1, DESCUENTO, TIPO_CAMBIO_DOLAR, FECHA, APLICACION, CLIENTE, REFERENCIA")
+            ->select("DOCUMENTO, TIPO, SUBTIPO, MONEDA, MONTO, SALDO, SUBTOTAL, IMPUESTO1, DESCUENTO, TIPO_CAMBIO_DOLAR, FECHA, APLICACION, CLIENTE, APLICACION")
             ->where("DOCUMENTO", $numeroDocumento)
             ->get()->first();
 
@@ -278,7 +278,6 @@ abstract class SoftlandHandler
             $documento->fecha = $record->{"FECHA"};
             $documento->aplicacion = $record->{"APLICACION"};
             $documento->cliente = $record->{"CLIENTE"};
-            $documento->referencia = $record->{"REFERENCIA"};
         }
         return $documento;
     }
