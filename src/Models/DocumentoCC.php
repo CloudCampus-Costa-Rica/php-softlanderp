@@ -90,4 +90,9 @@ class DocumentoCC
      * @var string|null
      */
     public $cuentaContableImpuesto;
+
+    /**
+     * @var string|null
+     */
+    public $asiento;
 }

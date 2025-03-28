@@ -82,6 +82,10 @@ class SoftlandConnector
             $facturaHandler->insertarAsientoDeDiario($factura, $asiento, $paquete, $tipoAsiento, $pdo);
             $facturaHandler->insertarDiario($factura, $cliente, $impuestos, $asiento, $pdo);
 
+            //asigar asiento a factura
+            $factura->asiento = $asiento;
+            $facturaHandler->actualizarDocumentoCC($factura, $asiento, $pdo);
+
             $pdo->commit();
         } catch (\Exception $e) {
             $pdo->rollBack();
@@ -133,6 +137,10 @@ class SoftlandConnector
             $asiento = $reciboHandler->obtenerConsecutivoPaquete("CC", $pdo);
             $reciboHandler->insertarAsientoDeDiario($recibo, $asiento, $paquete, $tipoAsiento, $pdo);
             $reciboHandler->insertarDiario($recibo, $cliente, null, $asiento, $pdo);
+
+            //asigar asiento a recibo
+            $recibo->asiento = $asiento;
+            $reciboHandler->actualizarDocumentoCC($recibo, $asiento, $pdo);
 
             $pdo->commit();
         } catch (\Exception $e) {
@@ -202,6 +210,10 @@ class SoftlandConnector
             $asiento = $notaCreditoHandler->obtenerConsecutivoPaquete("CC", $pdo);
             $notaCreditoHandler->insertarAsientoDeDiario($notaCredito, $asiento, $paquete, $tipoAsiento, $pdo);
             $notaCreditoHandler->insertarDiario($notaCredito, $cliente, $impuestos, $asiento, $pdo);
+
+            //asigar asiento a nota credito
+            $notaCredito->asiento = $asiento;
+            $notaCreditoHandler->actualizarDocumentoCC($notaCredito, $asiento, $pdo);
 
             $pdo->commit();
         } catch (\Exception $e) {

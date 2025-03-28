@@ -362,6 +362,29 @@ abstract class SoftlandHandler
 
     /**
      * @param DocumentoCC $documento
+     * @param string $asiento
+     * @return void
+     */
+    public function actualizarDocumentoCC($documento, $asiento, $pdo = null)
+    {
+        $esquema = $this->config->get('DB_SCHEMA');
+        $sql = "UPDATE {$esquema}.DOCUMENTOS_CC SET ASIENTO = :ASIENTO WHERE DOCUMENTO = :DOCUMENTO";
+
+        // Use provided PDO connection or get a new one
+        $usePdo = $pdo ?: $this->db->getConnection();
+
+        try {
+            $stmt = $usePdo->prepare($sql);
+            $stmt->bindParam(':ASIENTO', $asiento, \PDO::PARAM_STR);
+            $stmt->bindParam(':DOCUMENTO', $documento->documento, \PDO::PARAM_STR);
+            $stmt->execute();
+        } catch (\PDOException $e) {
+            throw new \RuntimeException("Error executing update statement: " . $e->getMessage());
+        }
+    }    
+
+    /**
+     * @param DocumentoCC $documento
      * @param Cliente $cliente
      * @param array $impuestos
      * @param string $asiento
