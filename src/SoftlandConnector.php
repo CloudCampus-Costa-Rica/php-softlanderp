@@ -158,8 +158,8 @@ class SoftlandConnector
         $pdo->beginTransaction();
 
         try {
-            $softlandHandler = new SoftlandHandler($this->config);
-            $factura = $softlandHandler->consultarDocumentoCC($notaCredito->documentoAplicacion);
+            $notaCreditoHandler = new NotaCreditoHandler($this->config);
+            $factura = $notaCreditoHandler->consultarDocumentoCC($notaCredito->documentoAplicacion);
 
             if($factura == null)
             {
