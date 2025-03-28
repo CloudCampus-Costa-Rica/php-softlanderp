@@ -169,6 +169,18 @@ class SoftlandConnector
             $clienteHandler = new ClienteHandler($this->config);
             $cliente = $clienteHandler->consultarCliente($factura->cliente);
 
+            if($cliente == null && $factura->nit != null)
+            {
+                $cliente = $clienteHandler->consultarClienteNit($factura->nit);
+            }
+
+            if($cliente == null)
+            {
+                throw new \Exception("Cliente no encontrado");
+            }
+
+            $notaCredito->cliente = $cliente->codigo;
+
             $notaCreditoHandler = new NotaCreditoHandler($this->config);
             $notaCreditoHandler->insertarDocumentoCC($notaCredito, $pdo);
 
