@@ -302,6 +302,7 @@ class ClienteHandler
             $cliente = new Cliente();
             $cliente->codigo = $record->{"CLIENTE"};
             $cliente->nit = $record->{"CONTRIBUYENTE"};
+            $cliente->categoria = $record->{"CATEGORIA_CLIENTE"};
             $cliente->cuentaContable = $categoria->{"CTA_CXC"};
             $cliente->centroCosto = $categoria->{"CTR_CXC"};
         }
@@ -338,6 +339,7 @@ class ClienteHandler
             $cliente = new Cliente();
             $cliente->codigo = $record->{"CLIENTE"};
             $cliente->nit = $record->{"CONTRIBUYENTE"};
+            $cliente->categoria = $record->{"CATEGORIA_CLIENTE"};
             $cliente->cuentaContable = $categoria->{"CTA_CXC"};
             $cliente->centroCosto = $categoria->{"CTR_CXC"};
         }

@@ -2,6 +2,8 @@
 
 namespace SoftlandERP;
 
+use SoftlandERP\Models\DocumentoCC;
+
 abstract class SoftlandHandler
 {
     /**

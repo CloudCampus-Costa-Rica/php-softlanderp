@@ -62,7 +62,7 @@ class NotaCreditoHandler extends SoftlandHandler
             $linea->consecutivo = $global;
             $linea->nit = $cliente->nit;
             // se obtiene del subtipo
-            if ($ln[$i] == "p") {
+            if (in_array($ln[$i], ["p", "d"])) {
                 $linea->centroCosto = $documento->centroCosto;
                 $linea->cuentaContable = $documento->cuentaContable;
             }

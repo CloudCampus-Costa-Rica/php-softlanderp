@@ -128,4 +128,9 @@ class Cliente
      * @var string
      */
     public $cuentaContable;
+
+    /**
+     * 
+     */
+    public $categoria;
 }

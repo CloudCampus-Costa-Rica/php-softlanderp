@@ -64,7 +64,7 @@ class FacturaHandler extends SoftlandHandler
             $linea->consecutivo = $global;
             $linea->nit = $cliente->nit;
             // se obtiene del subtipo
-            if ($ln[$i] == "p") {
+            if (in_array($ln[$i], ["p", "d"])) {
                 $linea->centroCosto = $documento->centroCosto;
                 $linea->cuentaContable = $documento->cuentaContable;
             }
@@ -142,6 +142,8 @@ class FacturaHandler extends SoftlandHandler
             $lineas[] = $linea;
             $global++;
         }
+
+        //dd(["factura" => $documento, "cliente" => $cliente, "impuestos" => $impuestos, "asiento" => $asiento, "lineas" => $lineas]);
 
         $esquema = $this->config->get('DB_SCHEMA');
         $sql = " INSERT INTO {$esquema}.DIARIO (ASIENTO, CONSECUTIVO, NIT, CENTRO_COSTO, CUENTA_CONTABLE, FUENTE, REFERENCIA,
