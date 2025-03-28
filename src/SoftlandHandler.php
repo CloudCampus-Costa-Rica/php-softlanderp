@@ -166,8 +166,8 @@ abstract class SoftlandHandler
             $stmt->bindParam(':saldo', $documento->saldo);
             $stmt->bindParam(':monto_local', $documento->monto);
             $stmt->bindParam(':saldo_local', $documento->saldo);
-            $stmt->bindValue(':monto_dolar', $documento->monto * $documento->tipoCambioDolar);
-            $stmt->bindValue(':saldo_dolar', $documento->saldo * $documento->tipoCambioDolar);
+            $stmt->bindValue(':monto_dolar', $documento->monto / $documento->tipoCambioDolar);
+            $stmt->bindValue(':saldo_dolar', $documento->saldo / $documento->tipoCambioDolar);
             $stmt->bindParam(':monto_cliente', $documento->monto);
             $stmt->bindParam(':saldo_cliente', $documento->saldo);
             $stmt->bindParam(':tipo_cambio_moneda', $documento->tipoCambioDolar);
