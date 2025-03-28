@@ -93,7 +93,8 @@ class NotaCreditoHandler extends SoftlandHandler
 
             if ($ln[$i] == "d") // debito descuento
             {
-                if ($documento->descuento == 0) {
+                continue;
+                /*if ($documento->descuento == 0) {
                     continue;
                 }
 
@@ -108,7 +109,7 @@ class NotaCreditoHandler extends SoftlandHandler
                 $linea->debitoLocal = null;
                 $linea->debitoDolar = null;
                 $linea->baseLocal = null;
-                $linea->baseDolar = null;
+                $linea->baseDolar = null;*/
             }
 
             if ($ln[$i] == "i") // CREDITO IVA

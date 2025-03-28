@@ -94,7 +94,8 @@ class FacturaHandler extends SoftlandHandler
 
             if ($ln[$i] == "d") // debito descuento
             {
-                if ($documento->descuento == 0) {
+                continue;
+                /*if ($documento->descuento == 0) {
                     continue;
                 }
 
@@ -109,7 +110,7 @@ class FacturaHandler extends SoftlandHandler
                 $linea->creditoLocal = null;
                 $linea->creditoDolar = null;
                 $linea->baseLocal = null;
-                $linea->baseDolar = null;
+                $linea->baseDolar = null;*/
             }
 
             if ($ln[$i] == "i") // CREDITO IVA
