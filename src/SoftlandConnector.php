@@ -56,6 +56,7 @@ class SoftlandConnector
         try {
             $facturaHandler = new FacturaHandler($this->config);
             $clienteHandler = new ClienteHandler($this->config);
+            $cliente = null;
             
             if(isset($factura->cliente) && $factura->cliente != null)
             {
@@ -105,6 +106,8 @@ class SoftlandConnector
 
         try {
             $softlandHandler = new SoftlandHandler($this->config);
+            $clienteHandler = new ClienteHandler($this->config);
+            $cliente = null;
             $factura = $softlandHandler->consultarDocumentoCC($recibo->documentoAplicacion);
 
             if($factura == null)
@@ -112,8 +115,6 @@ class SoftlandConnector
                 throw new \Exception("Factura [{$recibo->documentoAplicacion}] no encontrada");
             }
 
-            $clienteHandler = new ClienteHandler($this->config);
-            
             if(isset($factura->cliente) && $factura->cliente != null)
             {
                 $cliente = $clienteHandler->consultarCliente($factura->cliente);
@@ -181,6 +182,8 @@ class SoftlandConnector
 
         try {
             $notaCreditoHandler = new NotaCreditoHandler($this->config);
+            $clienteHandler = new ClienteHandler($this->config);
+            $cliente = null;
             $factura = $notaCreditoHandler->consultarDocumentoCC($notaCredito->documentoAplicacion);
 
             if($factura == null)
@@ -188,7 +191,6 @@ class SoftlandConnector
                 throw new \Exception("Factura [{$notaCredito->documentoAplicacion}] no encontrada");
             }
 
-            $clienteHandler = new ClienteHandler($this->config);
             if(isset($factura->cliente) && $factura->cliente != null)
             {
                 $cliente = $clienteHandler->consultarCliente($factura->cliente);
