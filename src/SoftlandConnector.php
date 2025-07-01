@@ -57,7 +57,7 @@ class SoftlandConnector
             $facturaHandler = new FacturaHandler($this->config);
             $clienteHandler = new ClienteHandler($this->config);
             
-            if($factura->cliente != null)
+            if(isset($factura->cliente) && $factura->cliente != null)
             {
                 $cliente = $clienteHandler->consultarCliente($factura->cliente);
             }
@@ -114,7 +114,7 @@ class SoftlandConnector
 
             $clienteHandler = new ClienteHandler($this->config);
             
-            if($factura->cliente != null)
+            if(isset($factura->cliente) && $factura->cliente != null)
             {
                 $cliente = $clienteHandler->consultarCliente($factura->cliente);
             }
@@ -189,7 +189,7 @@ class SoftlandConnector
             }
 
             $clienteHandler = new ClienteHandler($this->config);
-            if($factura->cliente != null)
+            if(isset($factura->cliente) && $factura->cliente != null)
             {
                 $cliente = $clienteHandler->consultarCliente($factura->cliente);
             }
