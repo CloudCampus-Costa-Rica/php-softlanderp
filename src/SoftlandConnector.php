@@ -52,19 +52,22 @@ class SoftlandConnector
         $pdo = $this->db->getConnection();
         $pdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
         $pdo->beginTransaction();
-
+        $step = "Inicio";
         try {
+            $step = "Instanciar handlers";
             $facturaHandler = new FacturaHandler($this->config);
             $clienteHandler = new ClienteHandler($this->config);
             $cliente = null;
             
             if(isset($factura->cliente) && $factura->cliente != null)
             {
+                $step = "Consultar cliente por codigo";
                 $cliente = $clienteHandler->consultarCliente($factura->cliente);
             }
 
             if($cliente == null && $factura->nit != null)
             {
+                $step = "Consultar cliente por nit";
                 $cliente = $clienteHandler->consultarClienteNit($factura->nit);
             }
 
@@ -73,16 +76,20 @@ class SoftlandConnector
                 throw new \Exception("Cliente no encontrado");
             }
 
+            $step = "Insertar documento cc";
             $factura->cliente = $cliente->codigo;
             $facturaHandler->insertarDocumentoCC($factura, $pdo);
 
             // crear asiento de notaCredito
+            $step = "Obtener parametros paquete para asiento de diario";
             $paquete = "CC";
             $tipoAsiento = "CC";
             $asiento = $facturaHandler->obtenerConsecutivoPaquete("CC", $pdo);
+            $step = "Insertar asiento";
             $facturaHandler->insertarAsientoDeDiario($factura, $asiento, $paquete, $tipoAsiento, $pdo);
             $facturaHandler->insertarDiario($factura, $cliente, $impuestos, $asiento, $pdo);
 
+            $step = "Asigar asiento a factura";
             //asigar asiento a factura
             $factura->asiento = $asiento;
             $facturaHandler->actualizarDocumentoCC($factura, $asiento, $pdo);
@@ -90,7 +97,7 @@ class SoftlandConnector
             $pdo->commit();
         } catch (\Exception $e) {
             $pdo->rollBack();
-            throw new \RuntimeException("Error al registrar factura: " . $e->getMessage());
+            throw new \RuntimeException("Error al registrar factura [$step]: " . $e->getMessage());
         }
     }
 
@@ -103,11 +110,13 @@ class SoftlandConnector
         $pdo = $this->db->getConnection();
         $pdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
         $pdo->beginTransaction();
-
+        $step = "Inicio";
         try {
+            $step = "Instanciar handlers";
             $softlandHandler = new SoftlandHandler($this->config);
             $clienteHandler = new ClienteHandler($this->config);
             $cliente = null;
+            $step = "Consultar documentao aplicacion";
             $factura = $softlandHandler->consultarDocumentoCC($recibo->documentoAplicacion);
 
             if($factura == null)
