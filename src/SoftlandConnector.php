@@ -57,7 +57,7 @@ class SoftlandConnector
             $facturaHandler = new FacturaHandler($this->config);
             $clienteHandler = new ClienteHandler($this->config);
             
-            if($factura->cliente == null)
+            if($factura->cliente != null)
             {
                 $cliente = $clienteHandler->consultarCliente($factura->cliente);
             }
@@ -113,7 +113,21 @@ class SoftlandConnector
             }
 
             $clienteHandler = new ClienteHandler($this->config);
-            $cliente = $clienteHandler->consultarCliente($factura->cliente);
+            
+            if($factura->cliente != null)
+            {
+                $cliente = $clienteHandler->consultarCliente($factura->cliente);
+            }
+
+            if($cliente == null && $factura->nit != null)
+            {
+                $cliente = $clienteHandler->consultarClienteNit($factura->nit);
+            }
+
+            if($cliente == null)
+            {
+                throw new \Exception("Cliente no encontrado");
+            }
 
             $reciboHandler = new ReciboHandler($this->config);
             $reciboHandler->insertarDocumentoCC($recibo, $pdo);
@@ -175,7 +189,10 @@ class SoftlandConnector
             }
 
             $clienteHandler = new ClienteHandler($this->config);
-            $cliente = $clienteHandler->consultarCliente($factura->cliente);
+            if($factura->cliente != null)
+            {
+                $cliente = $clienteHandler->consultarCliente($factura->cliente);
+            }
 
             if($cliente == null && $factura->nit != null)
             {
