@@ -139,6 +139,8 @@ class SoftlandConnector
                 throw new \Exception("Cliente no encontrado");
             }
 
+            $$recibo->cliente = $cliente->codigo;
+
             $reciboHandler = new ReciboHandler($this->config);
             $reciboHandler->insertarDocumentoCC($recibo, $pdo);
 
@@ -152,6 +154,8 @@ class SoftlandConnector
                 $auxiliar->docDebito = $factura->documento;
                 $auxiliar->monto = $recibo->monto;
                 $auxiliar->tipoCambioDolar = $recibo->tipoCambioDolar;
+                $auxiliar->tipoCambioDolar = $recibo->cliente;
+                $auxiliar->tipoCambioDolar = $recibo->fecha;
                 $auxiliarHandler->insertar($auxiliar, $pdo);
             }
 
@@ -230,6 +234,8 @@ class SoftlandConnector
                 $auxiliar->docDebito = $factura->documento;
                 $auxiliar->monto = $notaCredito->monto;
                 $auxiliar->tipoCambioDolar = $notaCredito->tipoCambioDolar;
+                $auxiliar->tipoCambioDolar = $notaCredito->cliente;
+                $auxiliar->tipoCambioDolar = $notaCredito->fecha;
                 $auxiliarHandler->insertar($auxiliar, $pdo);
             }
 
