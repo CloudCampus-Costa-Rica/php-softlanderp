@@ -154,8 +154,8 @@ class SoftlandConnector
                 $auxiliar->docDebito = $factura->documento;
                 $auxiliar->monto = $recibo->monto;
                 $auxiliar->tipoCambioDolar = $recibo->tipoCambioDolar;
-                $auxiliar->tipoCambioDolar = $recibo->cliente;
-                $auxiliar->tipoCambioDolar = $recibo->fecha;
+                $auxiliar->cliente = $recibo->cliente;
+                $auxiliar->fecha = $recibo->fecha;
                 $auxiliarHandler->insertar($auxiliar, $pdo);
             }
 
@@ -239,8 +239,8 @@ class SoftlandConnector
                 $auxiliar->docDebito = $factura->documento;
                 $auxiliar->monto = $notaCredito->monto;
                 $auxiliar->tipoCambioDolar = $notaCredito->tipoCambioDolar;
-                $auxiliar->tipoCambioDolar = $notaCredito->cliente;
-                $auxiliar->tipoCambioDolar = $notaCredito->fecha;
+                $auxiliar->cliente = $notaCredito->cliente;
+                $auxiliar->fecha = $notaCredito->fecha;
                 $auxiliarHandler->insertar($auxiliar, $pdo);
             }
 
