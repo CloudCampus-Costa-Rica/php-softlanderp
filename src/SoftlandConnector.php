@@ -141,7 +141,7 @@ class SoftlandConnector
                 throw new \Exception("Cliente no encontrado");
             }
 
-            $$recibo->cliente = $cliente->codigo;
+            $recibo->cliente = $cliente->codigo;
 
             $reciboHandler->insertarDocumentoCC($recibo, $pdo);
 
