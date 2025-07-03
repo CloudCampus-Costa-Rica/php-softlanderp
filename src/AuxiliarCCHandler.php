@@ -57,7 +57,7 @@ class AuxiliarCCHandler
 
         // Bind the input parameters to the placeholders
         $usuario = $this->config->get('DB_USERNAME');
-        $esquema = $this->config->get('DB_DATABASE');
+        $esquema = $this->config->get('DB_SCHEMA');
         $stmt->bindParam(':TIPOCREDITO', $auxiliarCC->tipoCredito, \PDO::PARAM_STR);
         $stmt->bindParam(':TIPODEBITO', $auxiliarCC->tipoDebito, \PDO::PARAM_STR);
         $stmt->bindParam(':DOCCREDITO', $auxiliarCC->docCredito, \PDO::PARAM_STR);
