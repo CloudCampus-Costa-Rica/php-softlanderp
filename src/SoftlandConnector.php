@@ -192,11 +192,12 @@ class SoftlandConnector
         $pdo = $this->db->getConnection();
         $pdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
         $pdo->beginTransaction();
-
+        $step = "Inicio";
         try {
             $notaCreditoHandler = new NotaCreditoHandler($this->config);
             $clienteHandler = new ClienteHandler($this->config);
             $cliente = null;
+            $step = "Consultar documentao aplicacion";
             $factura = $notaCreditoHandler->consultarDocumentoCC($notaCredito->documentoAplicacion);
 
             if($factura == null)
@@ -206,11 +207,13 @@ class SoftlandConnector
 
             if(isset($factura->cliente) && $factura->cliente != null)
             {
+                $step = "Consultar cliente por codigo";
                 $cliente = $clienteHandler->consultarCliente($factura->cliente);
             }
 
             if($cliente == null && $factura->nit != null)
             {
+                $step = "Consultar cliente por nit";
                 $cliente = $clienteHandler->consultarClienteNit($factura->nit);
             }
 
@@ -222,10 +225,12 @@ class SoftlandConnector
             $notaCredito->cliente = $cliente->codigo;
 
             $notaCreditoHandler = new NotaCreditoHandler($this->config);
+            $step = "Insertar documento cc";
             $notaCreditoHandler->insertarDocumentoCC($notaCredito, $pdo);
 
             if($aplicar){
                 // crear auxiliar de notaCredito
+                $step = "Insertar auxiliar";
                 $auxiliarHandler = new AuxiliarCCHandler($this->config);
                 $auxiliar = new AuxiliarCC();
                 $auxiliar->tipoCredito = $notaCredito->tipo;
@@ -241,18 +246,22 @@ class SoftlandConnector
 
             $paquete = "CC";
             $tipoAsiento = "CC";
+            $step = "Obtener parametros paquete para asiento de diario";
             $asiento = $notaCreditoHandler->obtenerConsecutivoPaquete("CC", $pdo);
+            $step = "Insertar asiento";
             $notaCreditoHandler->insertarAsientoDeDiario($notaCredito, $asiento, $paquete, $tipoAsiento, $pdo);
+            $step = "Insertar diario";
             $notaCreditoHandler->insertarDiario($notaCredito, $cliente, $impuestos, $asiento, $pdo);
 
             //asigar asiento a nota credito
             $notaCredito->asiento = $asiento;
+            $step = "Actualizar documento cc";
             $notaCreditoHandler->actualizarDocumentoCC($notaCredito, $asiento, $pdo);
 
             $pdo->commit();
         } catch (\Exception $e) {
             $pdo->rollBack();
-            throw new \RuntimeException("Error al registrar nota de crédito: " . $e->getMessage());
+            throw new \RuntimeException("Error al registrar nota de crédito [{$step}]: " . $e->getMessage());
         }
     }
     
