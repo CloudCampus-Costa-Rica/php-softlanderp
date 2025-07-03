@@ -113,12 +113,13 @@ class SoftlandConnector
         $step = "Inicio";
         try {
             $step = "Instanciar handlers";
-            $softlandHandler = new SoftlandHandler($this->config);
+            $reciboHandler = new ReciboHandler($this->config);
             $clienteHandler = new ClienteHandler($this->config);
-            $cliente = null;
-            $step = "Consultar documento aplicacion";
             $facturaHandler = new FacturaHandler($this->config);
-            $factura = $facturaHandler->consultarDocumentoCC($notaCredito->documentoAplicacion);
+
+            $cliente = null;
+            $step = "Consultar documento aplicacion";            
+            $factura = $facturaHandler->consultarDocumentoCC($recibo->documentoAplicacion);
 
             if($factura == null)
             {
@@ -142,7 +143,6 @@ class SoftlandConnector
 
             $$recibo->cliente = $cliente->codigo;
 
-            $reciboHandler = new ReciboHandler($this->config);
             $reciboHandler->insertarDocumentoCC($recibo, $pdo);
 
             if($aplicar){
@@ -197,9 +197,9 @@ class SoftlandConnector
         try {
             $notaCreditoHandler = new NotaCreditoHandler($this->config);
             $clienteHandler = new ClienteHandler($this->config);
+            $facturaHandler = new FacturaHandler($this->config);            
             $cliente = null;
             $step = "Consultar documentao aplicacion";
-            $facturaHandler = new FacturaHandler($this->config);
             $factura = $facturaHandler->consultarDocumentoCC($notaCredito->documentoAplicacion);
 
             if($factura == null)
