@@ -95,4 +95,11 @@ class DocumentoCC
      * @var string|null
      */
     public $asiento;
+
+    /**
+     * @var array|null
+     */
+    public $deducciones;
+
+
 }

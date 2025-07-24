@@ -27,10 +27,14 @@ class ReciboHandler extends SoftlandHandler
      */
     public function insertarDiario($documento, $cliente, $impuesto, $asiento, $pdo = null)
     {
-        $ln = ["p"];
+        /**
+         * p: deducciones, si existen
+         * m: cuenta contatable ingreso neto cta corriente banco moneda (ligada al medio de pago)
+         */
+        $ln = ["d", "m"];
         $lineas = [];
         $global = 1;
-        // insertar primera linea debito
+        // insertar primera linea debito, descargar la cuenta por cobrar del cliente
         $linea = new Diario();
         $linea->asiento = $asiento;
         $linea->consecutivo = $global++;
@@ -55,40 +59,64 @@ class ReciboHandler extends SoftlandHandler
         $linea->creditoUnidades = null;
         $linea->tipoCambio = $documento->tipoCambioDolar;
         $lineas[] = $linea;
-
+        $sumatoriaDeducciones = 0;
         for ($i = 0; $i < count($ln); $i++) {
-            $linea = new Diario();
-            $linea->asiento = $asiento;
-            $linea->consecutivo = $global++;
-            $linea->nit = $cliente->nit;
-            // se obtiene del subtipo
-            if ($ln[$i] == "p") {
-                $linea->centroCosto = $documento->centroCosto;
-                $linea->cuentaContable = $documento->cuentaContable;
+            if ($ln[$i] == "d") { // procesar las deducciones, si existen
+                foreach (($documento->deducciones ?: []) as $deduccion) {
+                    $linea = new Diario();
+                    $linea->asiento = $asiento;
+                    $linea->consecutivo = $global++;
+                    $linea->nit = $cliente->nit;
+                    $linea->centroCosto = $deduccion->centroCosto;
+                    $linea->cuentaContable = $deduccion->cuentaContable;
+                    $montoDeduccion = $deduccion->factor * $documento->monto;
+                    $sumatoriaDeducciones += $montoDeduccion;
+                    if ($documento->moneda == "CRC") {
+                        $linea->debitoLocal = $montoDeduccion;
+                        $linea->debitoDolar = round($montoDeduccion / $documento->tipoCambioDolar, 2);
+                    } else {
+                        $linea->debitoLocal = round($montoDeduccion * $documento->tipoCambioDolar, 2);
+                        $linea->debitoDolar = $montoDeduccion;
+                    }
+                    $linea->creditoLocal = null;
+                    $linea->creditoDolar = null;
+                    $linea->baseLocal = null;
+                    $linea->baseDolar = null;
+
+                    $linea->debitoUnidades = null;
+                    $linea->creditoUnidades = null;
+                    $linea->tipoCambio = $documento->tipoCambioDolar;
+                    $lineas[] = $linea;
+                }
             }
 
-            $linea->fuente = $documento->documento;
-            $linea->referencia = $documento->documento;
+            if ($ln[$i] == "m") { // ingreso neto cta corriente banco moneda
+                $linea = new Diario();
+                $linea->asiento = $asiento;
+                $linea->consecutivo = $global++;
+                $linea->nit = $cliente->nit;
+                $linea->centroCosto = $documento->centroCosto;
+                $linea->cuentaContable = $documento->cuentaContable;
 
-            if ($ln[$i] == "p") // debito pago
-            {
+                $linea->fuente = $documento->documento;
+                $linea->referencia = $documento->documento;
+
                 if ($documento->moneda == "CRC") {
-                    $linea->debitoLocal = $documento->subtotal;
-                    $linea->debitoDolar = round($documento->subtotal / $documento->tipoCambioDolar, 2);
+                    $linea->debitoLocal = $documento->monto - $sumatoriaDeducciones;
+                    $linea->debitoDolar = round(($documento->monto - $sumatoriaDeducciones) / $documento->tipoCambioDolar, 2);
                 } else {
-                    $linea->debitoLocal = round($documento->subtotal * $documento->tipoCambioDolar, 2);
-                    $linea->debitoDolar = $documento->subtotal;
+                    $linea->debitoLocal = round(($documento->monto - $sumatoriaDeducciones) * $documento->tipoCambioDolar, 2);
+                    $linea->debitoDolar = $documento->monto - $sumatoriaDeducciones;
                 }
                 $linea->creditoLocal = null;
                 $linea->creditoDolar = null;
                 $linea->baseLocal = null;
                 $linea->baseDolar = null;
+                $linea->debitoUnidades = null;
+                $linea->creditoUnidades = null;
+                $linea->tipoCambio = $documento->tipoCambioDolar;
+                $lineas[] = $linea;
             }
-
-            $linea->debitoUnidades = null;
-            $linea->creditoUnidades = null;
-            $linea->tipoCambio = $documento->tipoCambioDolar;
-            $lineas[] = $linea;
         }
 
         $esquema = $this->config->get('DB_SCHEMA');
@@ -100,7 +128,7 @@ class ReciboHandler extends SoftlandHandler
 
         // Use provided PDO connection or get a new one
         $usePdo = $pdo ?: $this->db->getConnection();
-        
+
         // Remove transaction handling if PDO was provided
         $newTransaction = !$pdo;
         if ($newTransaction) {
@@ -129,7 +157,7 @@ class ReciboHandler extends SoftlandHandler
                 $stmt->bindParam(':BASE_DOLAR', $linea->baseDolar);
                 $stmt->execute();
             }
-            
+
             if ($newTransaction) {
                 $usePdo->commit();
             }
