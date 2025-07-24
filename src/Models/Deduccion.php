@@ -4,6 +4,8 @@ namespace SoftlandERP\Models;
 
 /**
  * Representa un registro de decuccion para plantilla de asiento recibo
+ * 
+ */
 class DeduccionRecibo
 {
     
