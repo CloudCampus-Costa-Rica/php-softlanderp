@@ -12,9 +12,9 @@ class Utils
     public static function decodificarTipoIdentificacion($nit)
     {
         if (self::validarTipoIdentificacion($nit, Constantes::GENERAL_TIPO_ID_FISICO)) {
-            return Constantes::GENERAL_TIPO_STR_FISICO;
+            return Constantes::getGeneralTipoStrFisico();
         } elseif (self::validarTipoIdentificacion($nit, Constantes::GENERAL_TIPO_ID_JURIDICO)) {
-            return Constantes::GENERAL_TIPO_STR_JURIDICO;
+            return Constantes::getGeneralTipoStrJuridico();
             /*}elseif (self::validarTipoIdentificacion(Constantes::GENERAL_TIPO_ID_DIMEX, $nit)) {
             return Constantes::GENERAL_TIPO_ID_DIMEX;
         }elseif (self::validarTipoIdentificacion(Constantes::GENERAL_TIPO_ID_NITE, $nit)) {

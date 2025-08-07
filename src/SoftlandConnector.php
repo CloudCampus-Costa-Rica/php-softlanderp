@@ -6,6 +6,7 @@ use SoftlandERP\Models\Cliente;
 use SoftlandERP\Models\DocumentoCC;
 use SoftlandERP\Models\Impuesto;
 use SoftlandERP\Models\AuxiliarCC;
+use SoftlandERP\Constantes;
 
 class SoftlandConnector
 {
@@ -25,6 +26,7 @@ class SoftlandConnector
      */
     public function __construct($config)
     {
+        Constantes::loadEnv();
         $this->config = $config;
         $this->db = MSSQLDB::getInstance($config);
     }
