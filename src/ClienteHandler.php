@@ -326,6 +326,20 @@ class ClienteHandler
      */
     public function consultarClienteNit($nit)
     {
+
+        // primero decodificar el nit
+        $tipo = Utils::decodificarTipoIdentificacion($nit);
+
+        if($tipo == "ND"){
+            throw new \Exception("Tipo de identificación no válido: $tipo. Verifique el NIT del cliente: [$nit]");
+        }
+
+        $nitConMascara = $this->aplicarMascara($nit, $tipo);
+
+        if($nitConMascara == null || $nitConMascara == ""){
+            throw new \Exception("Error aplicando mascara para numero de identificacion. NIT no válido: [$nit] para el tipo de identificación [$tipo]");
+        }
+
         /**
          * @var Cliente $cliente
          */
@@ -333,7 +347,7 @@ class ClienteHandler
         $record =
             $this->db->table(Utils::tableSchema($this->config->get("DB_SCHEMA"), "CLIENTE"))
             ->select('CLIENTE, CONTRIBUYENTE, CATEGORIA_CLIENTE')
-            ->where("CONTRIBUYENTE", $nit)
+            ->where("CONTRIBUYENTE", $nitConMascara)
             ->get()
             ->first();
 
