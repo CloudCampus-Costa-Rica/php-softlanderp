@@ -88,6 +88,11 @@ class ClienteHandler
         if ($tipo == null) {
             $tipo = Utils::decodificarTipoIdentificacion($cliente->nit);
         }
+
+        if($tipo == "ND"){
+            throw new \Exception("Tipo de identificación no válido: $tipo. Valide el NIT del cliente: [$cliente->nit]");
+        }
+
         if ($nitConMascara == null) {
             $nitConMascara = $this->aplicarMascara($cliente->nit, $tipo);
         }
