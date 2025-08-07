@@ -35,7 +35,17 @@ class ClienteHandler
     public function insertar($cliente)
     {
         $tipo = Utils::decodificarTipoIdentificacion($cliente->nit);
+
+        if($tipo == "ND"){
+            throw new \Exception("Tipo de identificación no válido: $tipo. Verifique el NIT del cliente: [$cliente->nit]");
+        }
+
         $nitConMascara = $this->aplicarMascara($cliente->nit, $tipo);
+
+        if($nitConMascara == null || $nitConMascara == ""){
+            throw new \Exception("Error aplicando mascara para numero de identificacion. NIT no válido: [$cliente->nit] para el tipo de identificación [$tipo]");
+        }
+
         if (!$this->existeNit($nitConMascara)) {
             $this->registrarNit($cliente, $tipo, $nitConMascara);            
         }
@@ -87,10 +97,6 @@ class ClienteHandler
     {
         if ($tipo == null) {
             $tipo = Utils::decodificarTipoIdentificacion($cliente->nit);
-        }
-
-        if($tipo == "ND"){
-            throw new \Exception("Tipo de identificación no válido: $tipo. Verifique el NIT del cliente: [$cliente->nit]");
         }
 
         if ($nitConMascara == null) {
