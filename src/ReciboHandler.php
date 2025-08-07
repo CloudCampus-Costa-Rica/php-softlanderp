@@ -67,9 +67,13 @@ class ReciboHandler extends SoftlandHandler
                     $linea->asiento = $asiento;
                     $linea->consecutivo = $global++;
                     $linea->nit = $cliente->nit;
-                    $linea->centroCosto = $deduccion->centroCosto;
-                    $linea->cuentaContable = $deduccion->cuentaContable;
-                    $montoDeduccion = $deduccion->factor * $documento->monto;
+                    $linea->centroCosto = $deduccion["centroCosto"];
+                    $linea->cuentaContable = $deduccion["cuentaContable"];
+
+                    $linea->fuente = $documento->documento;
+                    $linea->referencia = $documento->documento;
+
+                    $montoDeduccion = $deduccion["factor"] * $documento->monto;
                     $sumatoriaDeducciones += $montoDeduccion;
                     if ($documento->moneda == "CRC") {
                         $linea->debitoLocal = $montoDeduccion;

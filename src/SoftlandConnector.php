@@ -35,7 +35,8 @@ class SoftlandConnector
     public function crear_cliente($cliente)
     {
         $clienteHandler = new ClienteHandler($this->config);
-        $clienteHandler->insertar($cliente);
+        $consecutivo = $clienteHandler->insertar($cliente);
+        return $consecutivo;
     }
 
     /**
