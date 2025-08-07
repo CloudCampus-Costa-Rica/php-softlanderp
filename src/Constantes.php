@@ -17,7 +17,7 @@ class Constantes
 
     const CLIENTES_CODIGO_CONSECUTIVO = "CLI-L";
     const CLIENTES_NIVEL_PRECIO = "ND-LOCAL";
-    const CLIENTES_PAIS = "CR";
+    const CLIENTES_PAIS = "CRI";
     const CLIENTES_CATEGORIA_CLIENTE = "ND";
 
 }
