@@ -47,7 +47,11 @@ class ClienteHandler
         }
 
         if (!$this->existeNit($nitConMascara)) {
-            $this->registrarNit($cliente, $tipo, $nitConMascara);            
+            try{
+                $this->registrarNit($cliente, $tipo, $nitConMascara);            
+            }catch(\Exception $e){
+                throw new \Exception("Error al registrar el NIT: [$nitConMascara] para el cliente: [$cliente->nombre]. Verifique el tipo de identificación: [$tipo]");
+            }
         }
         $existente = $this->consultarCodigoClienteNit($nitConMascara);
         if($existente){
@@ -262,7 +266,7 @@ class ClienteHandler
     public function obtenerConsecutivo()
     {
         try {
-            print("BEGIN obtenerConsecutivo\n");
+            //print("BEGIN obtenerConsecutivo\n");
             $record =
                 $this->db->table(Utils::tableSchema($this->config->get("DB_SCHEMA"), "CONSECUTIVO"))
                 ->select("ULTIMO_VALOR")
@@ -281,7 +285,7 @@ class ClienteHandler
         } catch (\Exception $e) {
             throw $e;
         } finally {
-            print("END obtenerConsecutivo\n");
+            //print("END obtenerConsecutivo\n");
         }
     }
 
