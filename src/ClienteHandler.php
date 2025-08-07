@@ -90,7 +90,7 @@ class ClienteHandler
         }
 
         if($tipo == "ND"){
-            throw new \Exception("Tipo de identificación no válido: $tipo. Valide el NIT del cliente: [$cliente->nit]");
+            throw new \Exception("Tipo de identificación no válido: $tipo. Verifique el NIT del cliente: [$cliente->nit]");
         }
 
         if ($nitConMascara == null) {
