@@ -101,5 +101,14 @@ class DocumentoCC
      */
     public $deducciones;
 
+    /** 
+     * @var string|null
+     */
+    public $centroCostoAux;
+    
+    /**
+     * @var string|null
+     */
+    public $cuentaContableAux;
 
 }
