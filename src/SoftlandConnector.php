@@ -105,6 +105,65 @@ class SoftlandConnector
     }
 
     /**
+     * @param DocumentoCC $factura
+     * @param array $impuestos array de impuestos con los siguientes atributos:
+     *  - centroCosto
+     *  - cuentaContable
+     *  - porcentaje
+     *  - codigo
+     *  - nombre
+     */
+    public function registrar_factura_reclasificacion($factura, $impuestos)
+    {
+        $pdo = $this->db->getConnection();
+        $pdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
+        $pdo->beginTransaction();
+        $step = "Inicio";
+        try {
+            $step = "Instanciar handlers";
+            $facturaHandler = new FacturaReclasifHandler($this->config);
+            $clienteHandler = new ClienteHandler($this->config);
+            $cliente = null;
+            
+            if(isset($factura->cliente) && $factura->cliente != null)
+            {
+                $step = "Consultar cliente por codigo";
+                $cliente = $clienteHandler->consultarCliente($factura->cliente);
+            }
+
+            if($cliente == null && $factura->nit != null)
+            {
+                $step = "Consultar cliente por nit";
+                $cliente = $clienteHandler->consultarClienteNit($factura->nit);
+            }
+
+            if($cliente == null)
+            {
+                throw new \Exception("Cliente no encontrado");
+            }
+
+            // crear asiento de factura reclasificacion
+            $step = "Obtener parametros paquete para asiento de diario";
+            $paquete = "CC";
+            $tipoAsiento = "CC";
+            $asiento = $facturaHandler->obtenerConsecutivoPaquete("CC", $pdo);
+            $step = "Insertar asiento";
+            $facturaHandler->insertarAsientoDeDiario($factura, $asiento, $paquete, $tipoAsiento, $pdo);
+            $facturaHandler->insertarDiario($factura, $cliente, $impuestos, $asiento, $pdo);
+
+            $step = "Asigar asiento a factura";
+            //asigar asiento a factura OJO no hay documento para asignar asiento xq el asiento es un ajuste nada mas
+            //$factura->asiento = $asiento;
+            //$facturaHandler->actualizarDocumentoCC($factura, $asiento, $pdo);
+            
+            $pdo->commit();
+        } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw new \RuntimeException("Error al registrar factura [$step]: " . $e->getMessage());
+        }
+    }
+
+    /**
      * @param DocumentoCC $recibo
      * @param boolean $aplicar indica si se aplica el recibo a la factura
      */
