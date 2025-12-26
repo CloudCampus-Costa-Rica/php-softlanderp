@@ -61,9 +61,10 @@ $notas = "Recibo No.27303 por concepto de Abonos a Letra| Letra No.463189";
 
 try {
     echo "Registrando asiento contable...\n";
-    $connector->registrar_asiento($lineas, $tipoCambio, $paquete, $tipoAsiento, $notas, $nit, $fecha);
+    $asiento = $connector->registrar_asiento($lineas, $tipoCambio, $paquete, $tipoAsiento, $notas, $nit, $fecha);
     echo "✓ Asiento contable registrado exitosamente\n";
     echo "El número de asiento se asignó automáticamente a todas las líneas\n";
+    echo "Asiento generado: " . $asiento . "\n";
 } catch (\Exception $e) {
     echo "✗ Error al registrar asiento: " . $e->getMessage() . "\n";
     echo "Stack trace:\n" . $e->getTraceAsString() . "\n";
