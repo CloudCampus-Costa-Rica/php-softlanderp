@@ -18,6 +18,7 @@ class AsientoContableHandler extends SoftlandHandler
     /**
      * @param array $lineas Array de arrays, donde cada elemento es una línea del diario
      * @param float $tipoCambio Tipo de cambio (aplica a todas las líneas)
+     * @param string|null $notas Notas opcionales
      * @param string|null $nit NIT opcional (puede ser null)
      * @param string|null $paquete Paquete para ASIENTO_DE_DIARIO (opcional, si se proporciona se inserta la cabecera)
      * @param string|null $tipoAsiento Tipo de asiento para ASIENTO_DE_DIARIO (opcional)
@@ -25,7 +26,7 @@ class AsientoContableHandler extends SoftlandHandler
      * @param \PDO|null $pdo Conexión PDO opcional para transacciones
      * @return void
      */
-    public function generarAsientoContable($lineas, $tipoCambio, $nit = null, $paquete = null, $tipoAsiento = null, $fecha = null, $pdo = null)
+    public function generarAsientoContable($lineas, $tipoCambio, $notas = null, $nit = null, $paquete = null, $tipoAsiento = null, $fecha = null, $pdo = null)
     {
         // Validar que el array de líneas no esté vacío
         if (empty($lineas)) {
@@ -161,7 +162,7 @@ class AsientoContableHandler extends SoftlandHandler
             $documentoTemporal->tipoCambioDolar = $tipoCambio;
 
             // Llamar al método heredado insertarAsientoDeDiario
-            $this->insertarAsientoDeDiario($documentoTemporal, $numeroAsiento, $paquete, $tipoAsiento, $pdo);
+            $this->insertarAsientoDeDiario($documentoTemporal, $numeroAsiento, $paquete, $tipoAsiento, $pdo, $notas);
         }
 
         // Insertar todas las líneas en la tabla DIARIO

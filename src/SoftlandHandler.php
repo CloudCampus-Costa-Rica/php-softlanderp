@@ -288,9 +288,11 @@ abstract class SoftlandHandler
      * @param string $asiento
      * @param string $paquete
      * @param string $tipoAsiento
+     * @param \PDO|null $pdo Conexión PDO opcional
+     * @param string|null $notas Notas opcionales
      * @return void
      */
-    public function insertarAsientoDeDiario($documento, $asiento, $paquete, $tipoAsiento, $pdo = null)
+    public function insertarAsientoDeDiario($documento, $asiento, $paquete, $tipoAsiento, $pdo = null, $notas = null)
     {
         echo "insertarAsientoDeDiario\n";
         $esquema = $this->config->get('DB_SCHEMA');
@@ -324,7 +326,7 @@ abstract class SoftlandHandler
             $stmt->bindValue(':ORIGEN', "CC", \PDO::PARAM_STR);
             $stmt->bindValue(':CLASE_ASIENTO', "N", \PDO::PARAM_STR);
             $stmt->bindValue(':MARCADO', "N", \PDO::PARAM_STR);
-            $stmt->bindValue(':NOTAS', "", \PDO::PARAM_STR);
+            $stmt->bindValue(':NOTAS', $notas, \PDO::PARAM_STR);
             $stmt->bindValue(':ULTIMO_USUARIO', $usuario, \PDO::PARAM_STR);
             $stmt->bindValue(':USUARIO_CREACION', $usuario, \PDO::PARAM_STR);
 

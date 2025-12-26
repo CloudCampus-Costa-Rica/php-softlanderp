@@ -343,10 +343,11 @@ class SoftlandConnector
      * @param float $tipoCambio Tipo de cambio
      * @param string $paquete Paquete para el asiento (ej: "CC")
      * @param string $tipoAsiento Tipo de asiento (ej: "CC")
+     * @param string|null $notas Notas opcionales
      * @param string|null $nit NIT opcional
      * @param string|null $fecha Fecha opcional del asiento
      */
-    public function registrar_asiento($lineas, $tipoCambio, $paquete, $tipoAsiento, $nit = null, $fecha = null)
+    public function registrar_asiento($lineas, $tipoCambio, $paquete, $tipoAsiento, $notas = null, $nit = null, $fecha = null)
     {
         $pdo = $this->db->getConnection();
         $pdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
@@ -366,7 +367,7 @@ class SoftlandConnector
             unset($linea); // Liberar referencia
             
             $step = "Generar asiento contable";
-            $asientoHandler->generarAsientoContable($lineas, $tipoCambio, $nit, $paquete, $tipoAsiento, $fecha, $pdo);
+            $asientoHandler->generarAsientoContable($lineas, $tipoCambio, $notas, $nit, $paquete, $tipoAsiento, $fecha, $pdo);
 
             $pdo->commit();
         } catch (\Exception $e) {
