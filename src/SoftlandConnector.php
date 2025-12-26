@@ -346,6 +346,7 @@ class SoftlandConnector
      * @param string|null $notas Notas opcionales
      * @param string|null $nit NIT opcional
      * @param string|null $fecha Fecha opcional del asiento
+     * @return string Asiento generado
      */
     public function registrar_asiento($lineas, $tipoCambio, $paquete, $tipoAsiento, $notas = null, $nit = null, $fecha = null)
     {
@@ -370,6 +371,7 @@ class SoftlandConnector
             $asientoHandler->generarAsientoContable($lineas, $tipoCambio, $notas, $nit, $paquete, $tipoAsiento, $fecha, $pdo);
 
             $pdo->commit();
+            return $asiento;
         } catch (\Exception $e) {
             $pdo->rollBack();
             throw new \RuntimeException("Error al registrar asiento [$step]: " . $e->getMessage());
