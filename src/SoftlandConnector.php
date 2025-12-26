@@ -328,5 +328,51 @@ class SoftlandConnector
             throw new \RuntimeException("Error al registrar nota de crédito [{$step}]: " . $e->getMessage());
         }
     }
+
+    /**
+     * @param array $lineas Array de arrays con las líneas del diario, cada línea debe contener:
+     *  - numeroAsiento
+     *  - centroCosto
+     *  - cuentaContable
+     *  - fuente
+     *  - referencia
+     *  - monto
+     *  - tipoMov: "debito" o "credito"
+     *  - moneda
+     *  - fecha (opcional)
+     * @param float $tipoCambio Tipo de cambio
+     * @param string $paquete Paquete para el asiento (ej: "CC")
+     * @param string $tipoAsiento Tipo de asiento (ej: "CC")
+     * @param string|null $nit NIT opcional
+     * @param string|null $fecha Fecha opcional del asiento
+     */
+    public function registrar_asiento($lineas, $tipoCambio, $paquete, $tipoAsiento, $nit = null, $fecha = null)
+    {
+        $pdo = $this->db->getConnection();
+        $pdo->exec("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
+        $pdo->beginTransaction();
+        $step = "Inicio";
+        try {
+            $step = "Instanciar handler";
+            $asientoHandler = new AsientoContableHandler($this->config);
+            
+            $step = "Obtener consecutivo del paquete";
+            $asiento = $asientoHandler->obtenerConsecutivoPaquete($paquete, $pdo);
+            
+            // Actualizar numeroAsiento en todas las líneas con el consecutivo obtenido
+            foreach ($lineas as &$linea) {
+                $linea['numeroAsiento'] = $asiento;
+            }
+            unset($linea); // Liberar referencia
+            
+            $step = "Generar asiento contable";
+            $asientoHandler->generarAsientoContable($lineas, $tipoCambio, $nit, $paquete, $tipoAsiento, $fecha, $pdo);
+
+            $pdo->commit();
+        } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw new \RuntimeException("Error al registrar asiento [$step]: " . $e->getMessage());
+        }
+    }
     
 }
