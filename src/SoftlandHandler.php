@@ -296,7 +296,7 @@ abstract class SoftlandHandler
     {
         echo "insertarAsientoDeDiario\n";
         $esquema = $this->config->get('DB_SCHEMA');
-        $usuario = $this->config->get('DB_USERNAME');
+        $usuario = $this->getUsername();
         $sql = " INSERT INTO {$esquema}.ASIENTO_DE_DIARIO (ASIENTO, PAQUETE, TIPO_ASIENTO, FECHA, CONTABILIDAD, ORIGEN, CLASE_ASIENTO, 
         TOTAL_DEBITO_LOC, TOTAL_DEBITO_DOL, TOTAL_CREDITO_LOC, TOTAL_CREDITO_DOL, ULTIMO_USUARIO, 
         FECHA_ULT_MODIF, MARCADO, NOTAS, TOTAL_CONTROL_LOC, TOTAL_CONTROL_DOL, USUARIO_CREACION, 
@@ -383,7 +383,17 @@ abstract class SoftlandHandler
         } catch (\PDOException $e) {
             throw new \RuntimeException("Error executing update statement: " . $e->getMessage());
         }
-    }    
+    }
+    
+    public function getUsername()
+    {
+        $username = $this->config->get('DB_USERNAME');
+        if(strpos($username, 'X') === 0)
+        {
+            return substr($username, 1);
+        }
+        return $username;
+    }
 
     /**
      * @param DocumentoCC $documento
