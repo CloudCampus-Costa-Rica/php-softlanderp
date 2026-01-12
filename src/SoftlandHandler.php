@@ -294,7 +294,7 @@ abstract class SoftlandHandler
      */
     public function insertarAsientoDeDiario($documento, $asiento, $paquete, $tipoAsiento, $pdo = null, $notas = null)
     {
-        echo "insertarAsientoDeDiario\n";
+        //echo "insertarAsientoDeDiario\n";
         $esquema = $this->config->get('DB_SCHEMA');
         $usuario = $this->getUsername();
         $sql = " INSERT INTO {$esquema}.ASIENTO_DE_DIARIO (ASIENTO, PAQUETE, TIPO_ASIENTO, FECHA, CONTABILIDAD, ORIGEN, CLASE_ASIENTO, 
